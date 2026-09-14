@@ -7,12 +7,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { reportData } = req.body;
+    const { reportData, customKey, apiKey: bodyKey, provider: bodyProvider, model: bodyModel } = req.body;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const provider = bodyProvider === "agent-platform" ? "agent-platform" : "gemini";
+    const apiKey = customKey || bodyKey || (provider === "gemini" ? process.env.GEMINI_API_KEY : process.env.AGENT_PLATFORM_API_KEY);
     if (!apiKey) {
       return res.status(400).json({
-        error: "Chưa cấu hình API Key.",
+        error: "Vui lòng cấu hình API Key trong mục Cài đặt trước khi sử dụng tính năng này.",
         isKeyMissing: true,
       });
     }
@@ -66,6 +67,8 @@ Hãy trả về phản hồi DUY NHẤT dưới dạng chuỗi JSON thuần vớ
 
     const result = await generateContentWithFallback({
       apiKey,
+      provider,
+      selectedModel: bodyModel,
       contents: prompt,
       config: {
         responseMimeType: "application/json",

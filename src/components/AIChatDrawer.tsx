@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { LabId, ChatMessage } from "../types";
 import { LAB_CATALOG } from "../data/labCatalog";
 import { MathRenderer } from "./MathRenderer";
+import { chatWithAITutor, hasConfiguredKey, getStoredProvider } from "../services/aiService";
 import { 
   X, 
   Send, 
@@ -15,7 +16,9 @@ import {
   Volume2,
   VolumeX,
   Radio,
-  StopCircle
+  StopCircle,
+  AlertCircle,
+  Settings
 } from "lucide-react";
 
 interface AIChatDrawerProps {
@@ -23,6 +26,7 @@ interface AIChatDrawerProps {
   onClose: () => void;
   currentLabId: LabId;
   soundEnabled: boolean;
+  onOpenSettings?: () => void;
 }
 
 export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
@@ -30,6 +34,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   onClose,
   currentLabId,
   soundEnabled,
+  onOpenSettings,
 }) => {
   const lab = LAB_CATALOG[currentLabId];
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -209,18 +214,19 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
         text: m.text,
       }));
 
-      const res = await fetch("/api/gemini/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: content.trim(),
-          labId: currentLabId,
-          history,
-        }),
+      const res = await chatWithAITutor({
+        message: content.trim(),
+        labId: currentLabId,
+        history,
+        currentLabContext: {
+          title: lab?.title,
+          lessonSGK: lab?.lessonSGK,
+          formula: lab?.formula,
+          principles: lab?.principles,
+        },
       });
 
-      const data = await res.json();
-      const botReply = data.reply || "Thầy đã ghi nhận câu hỏi của em. Em hãy quan sát đồ thị và thử liên hệ với công thức bài học nhé!";
+      const botReply = res.reply || "Thầy đã ghi nhận câu hỏi của em. Em hãy quan sát đồ thị và thử liên hệ với công thức bài học nhé!";
       const replyMsgId = (Date.now() + 1).toString();
 
       setMessages((prev) => [
@@ -237,13 +243,14 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       if (autoSpeakAI) {
         speakText(botReply, replyMsgId);
       }
-    } catch (err) {
+    } catch (err: any) {
+      const errorMsg = err?.message || "Xin lỗi em, kết nối tới dịch vụ AI đang gián đoạn. Em hãy thử lại nhé!";
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          text: "Xin lỗi em, kết nối tới máy chủ AI đang gián đoạn một chút. Em hãy thử lại nhé!",
+          text: errorMsg,
           timestamp: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -304,6 +311,25 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Warning banner if API Key is not configured */}
+      {!hasConfiguredKey() && (
+        <div className="px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-1.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>Chưa cấu hình API Key cá nhân.</span>
+          </div>
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              className="px-2 py-0.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px] transition-colors flex items-center gap-1 shadow-sm"
+            >
+              <Settings className="w-3 h-3" />
+              <span>Cài đặt ngay</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Voice Status Bar when speaking or listening */}
       {(isListening || isSpeaking) && (

@@ -14,15 +14,25 @@ const __dirname = path.dirname(__filename);
 // FALLBACK & ERROR HANDLING — Tuân thủ api.md v4.1
 // ============================================================
 
+export type AiProvider = "gemini" | "agent-platform";
+
 const FALLBACK_MODELS = [
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
   "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-pro",
 ] as const;
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const AGENT_PLATFORM_FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+] as const;
 
-type ApiErrorType = "MODEL_OVERLOADED" | "QUOTA_EXCEEDED" | "INVALID_API_KEY" | "INVALID_ARGUMENT" | "NOT_FOUND" | "UNKNOWN";
+const DEFAULT_MODEL = "gemini-3.6-flash";
+const DEFAULT_AGENT_PLATFORM_MODEL = "gemini-2.5-flash";
+
+type ApiErrorType = "MODEL_OVERLOADED" | "QUOTA_EXCEEDED" | "INVALID_API_KEY" | "PERMISSION_DENIED" | "INVALID_ARGUMENT" | "NOT_FOUND" | "UNKNOWN";
 
 const parseApiError = (error: any): ApiErrorType => {
   const message = error?.message || error?.toString() || "";
@@ -30,14 +40,21 @@ const parseApiError = (error: any): ApiErrorType => {
   const combined = `${message} ${serialized}`.toLowerCase();
 
   if (serialized.includes("429") || combined.includes("resource_exhausted") || combined.includes("quota")) return "QUOTA_EXCEEDED";
-  if (serialized.includes("503") || serialized.includes("504") || combined.includes("unavailable") || combined.includes("high demand") || combined.includes("overloaded") || combined.includes("try again later")) return "MODEL_OVERLOADED";
+  if (serialized.includes("503") || serialized.includes("504") || serialized.includes("500") || combined.includes("unavailable") || combined.includes("high demand") || combined.includes("overloaded") || combined.includes("try again later")) return "MODEL_OVERLOADED";
   if (serialized.includes("404") || combined.includes("not_found")) return "NOT_FOUND";
-  if (combined.includes("api_key_invalid") || serialized.includes("401") || combined.includes("permission_denied") || serialized.includes("403")) return "INVALID_API_KEY";
+  if (serialized.includes("403") || combined.includes("permission_denied")) return "PERMISSION_DENIED";
+  if (combined.includes("api_key_invalid") || serialized.includes("401") || combined.includes("api key not valid")) return "INVALID_API_KEY";
   if (serialized.includes("400") || combined.includes("invalid_argument")) return "INVALID_ARGUMENT";
   return "UNKNOWN";
 };
 
-const getOrderedModels = (selectedModel?: string): string[] => {
+const getOrderedModels = (selectedModel?: string, provider: AiProvider = "gemini"): string[] => {
+  if (provider === "agent-platform") {
+    const fallbackList = [...AGENT_PLATFORM_FALLBACK_MODELS];
+    const defaultMod = DEFAULT_AGENT_PLATFORM_MODEL;
+    if (!selectedModel) return [defaultMod, ...fallbackList.filter(m => m !== defaultMod)];
+    return [selectedModel, ...fallbackList.filter(m => m !== selectedModel)];
+  }
   const fallbackList = [...FALLBACK_MODELS];
   if (!selectedModel) return [DEFAULT_MODEL, ...fallbackList.filter(m => m !== DEFAULT_MODEL)];
   return [selectedModel, ...fallbackList.filter(m => m !== selectedModel)];
@@ -45,39 +62,62 @@ const getOrderedModels = (selectedModel?: string): string[] => {
 
 const generateContentWithFallback = async (
   ai: GoogleGenAI,
-  { contents, config, selectedModel }: { contents: any; config?: any; selectedModel?: string }
+  { contents, config, selectedModel, provider = "gemini" }: { contents: any; config?: any; selectedModel?: string; provider?: AiProvider }
 ) => {
-  const models = getOrderedModels(selectedModel);
+  const models = getOrderedModels(selectedModel, provider);
   let lastError: any = null;
   const firstModel = models[0];
 
-  for (const model of models) {
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
     try {
+      const cleanedConfig = { ...(config || {}) };
+      if (model.includes("3.6") || model.includes("3.5-flash-lite") || model.startsWith("gemini-3")) {
+        delete cleanedConfig.temperature;
+        delete cleanedConfig.topP;
+        delete cleanedConfig.topK;
+        if (!cleanedConfig.thinkingConfig) {
+          cleanedConfig.thinkingConfig = { thinkingLevel: "HIGH" };
+        }
+      }
+
       const response = await ai.models.generateContent({
         model,
         contents,
-        ...(config ? { config } : {}),
+        ...(Object.keys(cleanedConfig).length > 0 ? { config: cleanedConfig } : {}),
       });
       return { text: response.text || "", modelUsed: model, fallbackUsed: model !== firstModel };
     } catch (error: any) {
       lastError = error;
       const errorType = parseApiError(error);
-      console.warn(`[Gemini Fallback] Model "${model}" failed with ${errorType}: ${error.message?.substring(0, 120)}`);
-      if (errorType === "INVALID_API_KEY" || errorType === "QUOTA_EXCEEDED" || errorType === "INVALID_ARGUMENT" || errorType === "UNKNOWN") break;
+      console.warn(`[AI Server Fallback] Provider: "${provider}", Model "${model}" failed with ${errorType}: ${error.message?.substring(0, 120)}`);
+      if (errorType === "INVALID_API_KEY" || errorType === "QUOTA_EXCEEDED" || errorType === "INVALID_ARGUMENT") break;
+      if (errorType === "PERMISSION_DENIED") {
+        if (provider === "agent-platform" && i < models.length - 1) continue;
+        break;
+      }
+      if (errorType === "MODEL_OVERLOADED" || errorType === "NOT_FOUND") continue;
+      break;
     }
   }
-  throw lastError || new Error("Tất cả model Gemini đều không phản hồi. Vui lòng thử lại sau.");
+  throw lastError || new Error("Tất cả model AI đều không phản hồi. Vui lòng thử lại sau.");
 };
 
-const getFriendlyErrorMessage = (error: any): { message: string; statusCode: number } => {
+const getFriendlyErrorMessage = (error: any, provider: AiProvider = "gemini"): { message: string; statusCode: number } => {
   const errorType = parseApiError(error);
   switch (errorType) {
-    case "INVALID_API_KEY": return { message: "API Key không hợp lệ hoặc đã hết hạn.", statusCode: 401 };
+    case "INVALID_API_KEY": return { message: "API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại trong Cài đặt.", statusCode: 401 };
+    case "PERMISSION_DENIED": return {
+      message: provider === "agent-platform"
+        ? "Google đã nhận key nhưng dự án/key chưa được cấp quyền gọi Agent Platform API hoặc model này."
+        : "API key không có quyền truy cập Gemini API.",
+      statusCode: 403
+    };
     case "QUOTA_EXCEEDED": return { message: "Đã hết quota hoặc vượt giới hạn tốc độ API. Vui lòng đợi rồi thử lại.", statusCode: 429 };
     case "MODEL_OVERLOADED": return { message: "Model đang quá tải; app đang tự động thử model dự phòng.", statusCode: 503 };
     case "NOT_FOUND": return { message: "Model không khả dụng.", statusCode: 404 };
     case "INVALID_ARGUMENT": return { message: "Yêu cầu không hợp lệ.", statusCode: 400 };
-    default: return { message: "Lỗi xử lý yêu cầu AI.", statusCode: 500 };
+    default: return { message: error?.message || "Lỗi xử lý yêu cầu AI.", statusCode: 500 };
   }
 };
 
@@ -91,10 +131,13 @@ async function startServer() {
 
   app.use(express.json({ limit: "5mb" }));
 
-  // Initialize Gemini AI Client — Client Factory duy nhất (api.md Section III)
-  const getAiClient = (customKey?: string) => {
-    const key = customKey || process.env.GEMINI_API_KEY;
+  // Client Factory duy nhất (api.md Section III)
+  const getAiClient = (customKey?: string, provider: AiProvider = "gemini") => {
+    const key = customKey || (provider === "agent-platform" ? process.env.AGENT_PLATFORM_API_KEY : process.env.GEMINI_API_KEY);
     if (!key) return null;
+    if (provider === "agent-platform") {
+      return new GoogleGenAI({ vertexai: true, apiKey: key });
+    }
     return new GoogleGenAI({ apiKey: key });
   };
 
@@ -111,13 +154,15 @@ async function startServer() {
 
   // AI Tutor Chat Route — với Model Fallback
   app.post("/api/gemini/chat", async (req, res) => {
+    let provider: AiProvider = "gemini";
     try {
-      const { message, history = [], currentLabContext, labId, customKey } = req.body;
-      const ai = getAiClient(customKey);
+      const { message, history = [], currentLabContext, labId, customKey, apiKey: bodyKey, provider: bodyProvider, model: bodyModel } = req.body;
+      provider = bodyProvider === "agent-platform" ? "agent-platform" : "gemini";
+      const ai = getAiClient(customKey || bodyKey, provider);
 
       if (!ai) {
         return res.status(400).json({
-          error: "Chưa cấu hình GEMINI_API_KEY ở máy chủ hoặc Client.",
+          error: "Vui lòng cấu hình API Key trong mục Cài đặt trước khi sử dụng tính năng này.",
           isKeyMissing: true,
         });
       }
@@ -149,6 +194,8 @@ Nhiệm vụ của bạn:
 
       const result = await generateContentWithFallback(ai, {
         contents,
+        selectedModel: bodyModel,
+        provider,
         config: {
           systemInstruction: systemPrompt,
         },
@@ -161,20 +208,22 @@ Nhiệm vụ của bạn:
       });
     } catch (err: any) {
       console.error("Gemini Chat Error:", err);
-      const friendly = getFriendlyErrorMessage(err);
+      const friendly = getFriendlyErrorMessage(err, provider);
       return res.status(friendly.statusCode).json({ error: friendly.message });
     }
   });
 
   // AI Automated Grading Route — với Model Fallback
   app.post("/api/gemini/grade", async (req, res) => {
+    let provider: AiProvider = "gemini";
     try {
-      const { reportData, customKey } = req.body;
-      const ai = getAiClient(customKey);
+      const { reportData, customKey, apiKey: bodyKey, provider: bodyProvider, model: bodyModel } = req.body;
+      provider = bodyProvider === "agent-platform" ? "agent-platform" : "gemini";
+      const ai = getAiClient(customKey || bodyKey, provider);
 
       if (!ai) {
         return res.status(400).json({
-          error: "Chưa cấu hình API Key.",
+          error: "Vui lòng cấu hình API Key trong mục Cài đặt trước khi sử dụng tính năng này.",
           isKeyMissing: true,
         });
       }
@@ -214,6 +263,8 @@ Hãy trả về phản hồi DUY NHẤT dưới dạng chuỗi JSON thuần vớ
 
       const result = await generateContentWithFallback(ai, {
         contents: prompt,
+        selectedModel: bodyModel,
+        provider,
         config: {
           responseMimeType: "application/json",
         },
@@ -244,7 +295,7 @@ Hãy trả về phản hồi DUY NHẤT dưới dạng chuỗi JSON thuần vớ
       return res.json({ result: parsedResult, evaluation: parsedResult, modelUsed: result.modelUsed });
     } catch (err: any) {
       console.error("Gemini Grading Error:", err);
-      const friendly = getFriendlyErrorMessage(err);
+      const friendly = getFriendlyErrorMessage(err, provider);
       return res.status(friendly.statusCode).json({ error: friendly.message });
     }
   });

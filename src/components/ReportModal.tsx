@@ -3,6 +3,7 @@ import { LabId, MeasurementRecord, EvaluationReport } from "../types";
 import { MathRenderer } from "./MathRenderer";
 import { LAB_CATALOG, getLabColumnHeaders } from "../data/labCatalog";
 import { calculateStatisticalError } from "../utils/physicsEngine";
+import { gradeLabReport, hasConfiguredKey } from "../services/aiService";
 import { 
   X, 
   Printer, 
@@ -17,7 +18,8 @@ import {
   Wind,
   ShieldCheck,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  Settings
 } from "lucide-react";
 
 interface ReportModalProps {
@@ -26,6 +28,7 @@ interface ReportModalProps {
   currentLabId: LabId;
   records: MeasurementRecord[];
   instrumentError: number;
+  onOpenSettings?: () => void;
 }
 
 export const ReportModal: React.FC<ReportModalProps> = ({
@@ -34,6 +37,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   currentLabId,
   records,
   instrumentError,
+  onOpenSettings,
 }) => {
   const lab = LAB_CATALOG[currentLabId];
   const colHeaders = lab?.columnHeaders || getLabColumnHeaders(currentLabId);
@@ -64,48 +68,44 @@ export const ReportModal: React.FC<ReportModalProps> = ({
     ? calculateStatisticalError(primaryValues, instrumentError)
     : null;
 
+  const [gradingError, setGradingError] = useState("");
+
   // AI Grading Trigger
   const handleAIGrade = async () => {
     setIsGrading(true);
+    setGradingError("");
     try {
-      const res = await fetch("/api/gemini/grade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reportData: {
-            labId: currentLabId,
-            labTitle: lab?.title || "Thí nghiệm Vật lí 10",
-            lessonSGK: lab?.lessonSGK || "Chương trình GDPT 2018",
-            formula: lab?.formula || "",
-            studentInfo: {
-              name: studentName,
-              className: studentClass,
-              school: studentSchool,
-            },
-            dataRecordsCount: records.length,
-            records: records.map((r) => ({
-              trial: r.trialNumber,
-              param1: r.param1,
-              param2: r.param2,
-              calculated1: r.calculated1,
-              calculated2: r.calculated2,
-            })),
-            statsResult: stats,
-            defaultQuestions: lab?.defaultQuestions || [],
-            theoryAnswers: [theoryAnswer1, theoryAnswer2],
-            studentErrorAssessment: studentComments,
-          },
-        }),
-      });
+      const reportPayload = {
+        labId: currentLabId,
+        labTitle: lab?.title || "Thí nghiệm Vật lí 10",
+        lessonSGK: lab?.lessonSGK || "Chương trình GDPT 2018",
+        formula: lab?.formula || "",
+        studentInfo: {
+          name: studentName,
+          className: studentClass,
+          school: studentSchool,
+        },
+        dataRecordsCount: records.length,
+        records: records.map((r) => ({
+          trial: r.trialNumber,
+          param1: r.param1,
+          param2: r.param2,
+          calculated1: r.calculated1,
+          calculated2: r.calculated2,
+        })),
+        statsResult: stats,
+        defaultQuestions: lab?.defaultQuestions || [],
+        theoryAnswers: [theoryAnswer1, theoryAnswer2],
+        studentErrorAssessment: studentComments,
+      };
 
-      const data = await res.json();
-      if (data.result) {
-        setEvaluation(data.result);
-      } else if (data.evaluation) {
-        setEvaluation(data.evaluation);
+      const result = await gradeLabReport({ reportData: reportPayload });
+      if (result) {
+        setEvaluation(result.result || result.evaluation || result);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("AI Grading failed:", err);
+      setGradingError(err?.message || "Lỗi khi chấm điểm báo cáo qua AI.");
     } finally {
       setIsGrading(false);
     }
@@ -357,6 +357,33 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 )}
               </button>
             </div>
+
+            {/* Warning if Key not configured */}
+            {!hasConfiguredKey() && (
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span>Chưa cấu hình API Key cá nhân. Hãy cấu hình trong Cài đặt để chấm bài AI mượt mà và không giới hạn.</span>
+                </div>
+                {onOpenSettings && (
+                  <button
+                    onClick={onOpenSettings}
+                    className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition-colors flex items-center gap-1 shadow-sm shrink-0"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>Cài đặt ngay</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {gradingError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{gradingError}</span>
+              </div>
+            )}
 
             {evaluation && (
               <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 to-indigo-50/70 dark:from-slate-850 dark:to-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-5 shadow-inner">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { LabId } from "../types";
 import { LAB_CATALOG } from "../data/labCatalog";
+import { hasConfiguredKey } from "../services/aiService";
 import { 
   Atom, 
   Sparkles, 
@@ -12,7 +13,9 @@ import {
   ChevronDown,
   Layers,
   FlaskConical,
-  GraduationCap
+  GraduationCap,
+  Sun,
+  Moon
 } from "lucide-react";
 
 interface HeaderProps {
@@ -23,6 +26,8 @@ interface HeaderProps {
   onOpenSettings: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   soundEnabled,
   onToggleSound,
+  isDarkMode,
+  onToggleTheme,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -213,14 +220,27 @@ export const Header: React.FC<HeaderProps> = ({
             {soundEnabled ? <Volume2 className="w-4 h-4 text-green-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
           </button>
 
+          {/* Theme Toggle */}
+          <button
+            id="btn-toggle-theme"
+            onClick={onToggleTheme}
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700"
+            title={isDarkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+          >
+            {isDarkMode ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-blue-400" />}
+          </button>
+
           {/* Settings Modal */}
           <button
             id="btn-open-settings"
             onClick={onOpenSettings}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700"
-            title="Cài đặt hệ thống & API Key"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 relative"
+            title={hasConfiguredKey() ? "Cài đặt hệ thống & API Key" : "Chưa cấu hình API Key (Nhấn để cài đặt)"}
           >
             <Settings className="w-4 h-4" />
+            {!hasConfiguredKey() && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-slate-900 animate-pulse" />
+            )}
           </button>
         </div>
       </div>

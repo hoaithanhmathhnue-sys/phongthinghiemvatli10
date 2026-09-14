@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { MathRenderer } from "./MathRenderer";
 import { LAB_CATALOG } from "../data/labCatalog";
 import { LabDefinition } from "../types";
+import { generateSimulationSetup, hasConfiguredKey } from "../services/aiService";
 import {
   X,
   Monitor,
@@ -17,11 +18,14 @@ import {
   CheckCircle2,
   FileText,
   Atom,
+  AlertCircle,
+  Settings,
 } from "lucide-react";
 
 interface SimSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenSettings?: () => void;
 }
 
 interface GeneratedSim {
@@ -34,7 +38,7 @@ interface GeneratedSim {
   suggestedLabId?: string;
 }
 
-export const SimSetupModal: React.FC<SimSetupModalProps> = ({ isOpen, onClose }) => {
+export const SimSetupModal: React.FC<SimSetupModalProps> = ({ isOpen, onClose, onOpenSettings }) => {
   const [subject, setSubject] = useState("Vật lý");
   const [grade, setGrade] = useState("Lớp 10");
   const [inputMode, setInputMode] = useState<"topic" | "file">("topic");
@@ -105,41 +109,23 @@ Trả lời CHÍNH XÁC theo format JSON sau (không thêm markdown):
   "suggestedLabId": "Nếu trùng với thí nghiệm có sẵn thì ghi ID (free_fall, projectile, newton2, friction, concurrent_force, moment_rule, pendulum_energy, collision_momentum, hooke_law, fluid_pressure), nếu không thì để null"
 }`;
 
-      const response = await fetch("/api/gemini/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          labId: "free_sandbox",
-          message: prompt,
-          history: [],
-        }),
-      });
-
-      if (!response.ok) throw new Error("API Error");
-
-      const data = await response.json();
-      const text = data.reply || data.text || "";
-
-      // Parse JSON from response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = await generateSimulationSetup({ prompt });
+      if (parsed && typeof parsed === "object") {
         setGeneratedResult(parsed);
       } else {
-        // Fallback: show as description
         setGeneratedResult({
           title: topic || "Mô phỏng AI",
-          description: text,
+          description: String(parsed),
           equipment: [],
           parameters: [],
           steps: [],
           formula: "",
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       setGeneratedResult({
         title: "Lỗi tạo mô phỏng",
-        description: "Không thể kết nối AI. Vui lòng kiểm tra API key và thử lại.",
+        description: err?.message || "Không thể kết nối AI. Vui lòng kiểm tra API key trong Cài đặt và thử lại.",
         equipment: [],
         parameters: [],
         steps: [],
@@ -168,6 +154,25 @@ Trả lời CHÍNH XÁC theo format JSON sau (không thêm markdown):
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
+
+        {/* Warning banner if API Key is not configured */}
+        {!hasConfiguredKey() && (
+          <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-200 flex items-center justify-between text-xs text-amber-900">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Chưa cấu hình API Key cá nhân để tạo mô phỏng bằng AI.</span>
+            </div>
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Cài đặt ngay</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-6">

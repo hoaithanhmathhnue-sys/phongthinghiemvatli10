@@ -1027,10 +1027,10 @@ export const LabControls: React.FC<LabControlsProps> = ({
           <Info className="w-3.5 h-3.5" />
           <span>CƠ SỞ LÝ THUYẾT & CÔNG THỨC SGK</span>
         </div>
-        <div className="font-mono text-blue-950 dark:text-blue-200 bg-white/70 dark:bg-slate-900/80 p-2 rounded border border-blue-200/60 dark:border-blue-800/40 text-center font-bold tracking-wide">
+        <div className="font-mono text-blue-950 dark:text-white bg-white/70 dark:bg-slate-900/80 p-2 rounded border border-blue-200/60 dark:border-blue-800/40 text-center font-bold tracking-wide [&_mjx-container]:!text-inherit">
           <MathRenderer content={"\\(" + lab.formula + "\\)"} />
         </div>
-        <ul className="mt-2 space-y-1 text-slate-600 dark:text-slate-400 text-[11px] list-disc list-inside">
+        <ul className="mt-2 space-y-1 text-slate-600 dark:text-slate-300 text-[11px] list-disc list-inside [&_mjx-container]:!text-inherit">
           {lab.principles.slice(0, 2).map((p, idx) => (
             <li key={idx} className="leading-snug"><MathRenderer content={p} /></li>
           ))}

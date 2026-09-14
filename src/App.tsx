@@ -28,18 +28,35 @@ export default function App() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [resetKey, setResetKey] = useState<number>(0);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("physics-lab-theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
   // Modal / Drawer visibility
   const [isAIOpen, setIsAIOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isSimSetupOpen, setIsSimSetupOpen] = useState<boolean>(false);
+  const [keyUpdateTick, setKeyUpdateTick] = useState<number>(0);
 
   // Instrument error (Δxdc)
   const [instrumentError, setInstrumentError] = useState<number>(0.001);
 
   // Experiment log entries
   const [experimentLog, setExperimentLog] = useState<LogEntry[]>([]);
+
+  // Theme toggle effect
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("physics-lab-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   // Dynamic parameters state for each lab
   const [params, setParams] = useState<Record<string, any>>({
@@ -328,6 +345,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
       {/* Top Header */}
       <Header
+        key={`header-${keyUpdateTick}`}
         currentLabId={currentLabId}
         onSelectLab={(id) => {
           setCurrentLabId(id);
@@ -339,6 +357,8 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled(!soundEnabled)}
+        isDarkMode={isDarkMode}
+        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
 
       {/* Main Workspace Container */}
@@ -477,6 +497,7 @@ export default function App() {
         onClose={() => setIsAIOpen(false)}
         currentLabId={currentLabId}
         soundEnabled={soundEnabled}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Visit Counter Footer */}
@@ -490,6 +511,7 @@ export default function App() {
         currentLabId={currentLabId}
         records={currentRecords}
         instrumentError={instrumentError}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       <SettingsModal
@@ -499,11 +521,13 @@ export default function App() {
         onToggleSound={() => setSoundEnabled(!soundEnabled)}
         instrumentError={instrumentError}
         onChangeInstrumentError={setInstrumentError}
+        onApiKeySaved={() => setKeyUpdateTick((t) => t + 1)}
       />
 
       <SimSetupModal
         isOpen={isSimSetupOpen}
         onClose={() => setIsSimSetupOpen(false)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
     </div>
   );

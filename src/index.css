@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+/* === Theme Toggle: dark mode via class strategy === */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* === MathJax color inheritance for dark mode === */
+.dark mjx-container,
+.dark mjx-container * {
+  color: inherit !important;
+}
+
+/* === Smooth theme transition === */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar for dark/light */
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }

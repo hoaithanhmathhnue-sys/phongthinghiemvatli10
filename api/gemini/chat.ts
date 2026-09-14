@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { generateContentWithFallback, getFriendlyErrorMessage } from "../_lib/geminiClient";
+import { generateContentWithFallback, getFriendlyErrorMessage, AiProvider } from "../_lib/geminiClient";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -7,12 +7,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { message, history = [], currentLabContext, labId } = req.body;
+    const { message, history = [], currentLabContext, labId, customKey, apiKey: bodyKey, provider: bodyProvider, model: bodyModel } = req.body;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const provider: AiProvider = bodyProvider === "agent-platform" ? "agent-platform" : "gemini";
+    const apiKey = customKey || bodyKey || (provider === "gemini" ? process.env.GEMINI_API_KEY : process.env.AGENT_PLATFORM_API_KEY);
+
     if (!apiKey) {
       return res.status(400).json({
-        error: "Chưa cấu hình GEMINI_API_KEY ở máy chủ.",
+        error: "Vui lòng cấu hình API Key trong mục Cài đặt trước khi sử dụng tính năng này.",
         isKeyMissing: true,
       });
     }
@@ -44,6 +46,8 @@ Nhiệm vụ của bạn:
 
     const result = await generateContentWithFallback({
       apiKey,
+      provider,
+      selectedModel: bodyModel,
       contents,
       config: {
         systemInstruction: systemPrompt,
