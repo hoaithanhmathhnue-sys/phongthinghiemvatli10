@@ -229,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="hidden lg:block bg-slate-950/70 border-t border-slate-800/80 px-6 py-1.5 overflow-x-auto">
         <div className="max-w-7xl mx-auto flex items-center space-x-1 text-xs">
           <span className="text-slate-500 text-[11px] font-medium mr-2">CHUYÊN ĐỀ:</span>
-          {modules.map((m, idx) => {
+          {chapters.map((m, idx) => {
             const hasCurrentLab = m.labs.includes(currentLabId);
             return (
               <button
@@ -242,7 +242,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                 }`}
               >
-                {m.name.split(":")[0]}
+                {m.name.split(". ")[0]}
                 {hasCurrentLab && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>}
               </button>
             );

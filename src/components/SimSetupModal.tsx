@@ -66,7 +66,7 @@ export const SimSetupModal: React.FC<SimSetupModalProps> = ({ isOpen, onClose })
     const keyword = topic.trim().toLowerCase();
     if (!keyword) return;
     const results = Object.values(LAB_CATALOG).filter((lab) => {
-      const name = (lab.name || lab.title || "").toLowerCase();
+      const name = (lab.title || "").toLowerCase();
       const desc = (lab.description || "").toLowerCase();
       const princ = (lab.principles || []).join(" ").toLowerCase();
       return name.includes(keyword) || desc.includes(keyword) || princ.includes(keyword);
