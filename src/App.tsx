@@ -364,42 +364,47 @@ export default function App() {
       {/* Main Workspace Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 space-y-6">
         {/* Lab Title Banner */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/10 dark:bg-cyan-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-cyan-400">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm space-y-3.5">
+          {/* Hàng 1: Thông tin bài học (Icon, Badge, Tên chương, Tên bài) */}
+          <div className="flex items-start sm:items-center space-x-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-600/10 dark:bg-cyan-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-cyan-400 shrink-0 mt-0.5 sm:mt-0">
               <FlaskConical className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 shrink-0">
                   {currentLab.badge}
                 </span>
-                <span className="text-xs font-mono text-slate-500">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
                   {currentLab.lessonSGK}
                 </span>
               </div>
-              <h1 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+              <h1 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
                 {currentLab.title}
               </h1>
             </div>
           </div>
 
-          {/* Quick AI Trigger Chip */}
-          <button
-            onClick={() => setIsAIOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600/10 to-teal-600/10 hover:from-blue-600/20 hover:to-teal-600/20 border border-blue-500/30 text-blue-700 dark:text-cyan-300 text-xs font-semibold transition-all hover:scale-[1.02]"
-          >
-            <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-            <span>Thầy AI Sư Phạm: "Em cần trợ giúp gì trong bài này?"</span>
-          </button>
+          {/* Hàng 2 RIÊNG BIỆT: Nút Thầy AI Sư Phạm & Thiết lập mô phỏng */}
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Quick AI Trigger Chip */}
+            <button
+              onClick={() => setIsAIOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600/10 via-cyan-600/10 to-teal-600/10 hover:from-blue-600/20 hover:to-teal-600/20 border border-blue-500/30 text-blue-700 dark:text-cyan-300 text-xs font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
+            >
+              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
+              <span>Thầy AI Sư Phạm: "Em cần trợ giúp gì trong bài này?"</span>
+            </button>
 
-          <button
-            onClick={() => setIsSimSetupOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600/10 to-teal-600/10 hover:from-emerald-600/20 hover:to-teal-600/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition-all hover:scale-[1.02]"
-          >
-            <Atom className="w-4 h-4 text-emerald-500" />
-            <span>Thiết lập mô phỏng</span>
-          </button>
+            {/* Sim Setup Button */}
+            <button
+              onClick={() => setIsSimSetupOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600/10 to-teal-600/10 hover:from-emerald-600/20 hover:to-teal-600/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 shadow-xs"
+            >
+              <Atom className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Thiết lập mô phỏng</span>
+            </button>
+          </div>
         </div>
 
         {/* 2-Column Responsive Workspace: Canvas + Controls */}
