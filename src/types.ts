@@ -1,10 +1,10 @@
 export type LabCategory = 
-  | "module0" // An toàn & Đo lường
-  | "module1" // Động học
-  | "module2" // Động lực học
-  | "module3" // Cân bằng & Moment
-  | "module4" // Năng lượng & Động lượng
-  | "module5" // Biến dạng & Chất lưu
+  | "chuong1" // Chương I. Mở Đầu (Bài 1–3)
+  | "chuong2" // Chương II. Động Học (Bài 4–12)
+  | "chuong3" // Chương III. Động Lực Học (Bài 13–19, 20–22)
+  | "chuong4" // Chương IV. Năng Lượng, Công, Công Suất (Bài 23–27)
+  | "chuong5" // Chương V. Động Lượng (Bài 28–30)
+  | "chuong7" // Chương VII. Biến Dạng Vật Rắn & Áp Suất Chất Lỏng (Bài 33–34)
   | "sandbox" // Thí nghiệm Tương tác Tự do
   | "assessment"; // Phiếu thực hành số
 

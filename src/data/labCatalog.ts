@@ -26,11 +26,11 @@ export function getLabColumnHeaders(labId?: LabId | string): string[] {
 export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   safety_measure: {
     id: "safety_measure",
-    category: "module0",
+    category: "chuong1",
     title: "An Toàn & Kỹ Thuật Đo Lường Phòng Lab",
     subtitle: "Bài 2 & 3: Quy tắc an toàn, đồng hồ MC964 & thước kẹp du xích Vernier",
-    lessonSGK: "Bài 2, 3 SGK Vật lí 10 (KNTT)",
-    badge: "Module 0 • Nền tảng thực nghiệm",
+    lessonSGK: "Chương I – Bài 2: Các quy tắc an toàn trong phòng thực hành Vật lí & Bài 3: Thực hành tính sai số",
+    badge: "Chương I • Mở Đầu",
     description: "Khảo sát nguyên tắc an toàn điện, quang, cơ học trong phòng thí nghiệm. Rèn luyện kỹ năng đọc dụng cụ đo chuẩn xác: đồng hồ hiện số MC964 với các chế độ cổng quang điện và thước cặp cơ khí Vernier 0.02 mm.",
     equipmentList: [
       "Bộ nguồn xoay chiều/một chiều 0-12V an toàn",
@@ -82,11 +82,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   free_fall: {
     id: "free_fall",
-    category: "module1",
+    category: "chuong2",
     title: "Thực Hành Đo Gia Tốc Rơi Tự Do",
     subtitle: "Bài 10 & 11: Cột trụ thẳng đứng, nam châm điện & 2 cổng quang E - F",
-    lessonSGK: "Bài 10, 11 SGK Vật lí 10 (KNTT)",
-    badge: "Module 1 • Động học",
+    lessonSGK: "Chương II – Bài 10: Sự rơi tự do & Bài 11: Thực hành đo gia tốc rơi tự do",
+    badge: "Chương II • Động Học",
     description: "Khảo sát chuyển động rơi tự do của viên bi thép dưới tác dụng của trọng lực. Đo thời gian rơi giữa hai cổng quang E và F ở các khoảng cách s khác nhau. Vẽ đồ thị s - t² và xác định gia tốc rơi tự do g từ hệ số góc đường hồi quy.",
     equipmentList: [
       "Trụ thẳng đứng có giá đỡ và thước milimet 1000 mm",
@@ -143,11 +143,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   projectile: {
     id: "projectile",
-    category: "module1",
+    category: "chuong2",
     title: "Chuyển Động Ném Ngang & Ném Xiên",
     subtitle: "Bài 12: Thả rơi bi A đồng thời ném ngang bi B (Hình 12.1 SGK)",
-    lessonSGK: "Bài 12 SGK Vật lí 10 (KNTT)",
-    badge: "Module 1 • Động học",
+    lessonSGK: "Chương II – Bài 12: Chuyển động ném",
+    badge: "Chương II • Động Học",
     description: "Tái hiện nguyên bản thí nghiệm Hình 12.1 SGK: Dùng búa gõ bật chốt đẩy bi B chuyển động ném ngang đồng thời thả rơi tự do bi A từ cùng độ cao H. Khảo sát quỹ đạo ném xiên các góc từ 0° đến 75°, phân tích vector vận tốc v_x, v_y, tầm bay xa L và tầm bay cao H_max.",
     equipmentList: [
       "Khung thí nghiệm ném ngang có thanh thép đàn hồi và búa gõ",
@@ -204,11 +204,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   newton2: {
     id: "newton2",
-    category: "module2",
+    category: "chuong3",
     title: "Kiểm Chứng Định Luật II Newton",
     subtitle: "Bài 15: Máng trượt đệm khí không ma sát & 2 cổng quang điện",
-    lessonSGK: "Bài 15 SGK Vật lí 10 (KNTT)",
-    badge: "Module 2 • Động lực học",
+    lessonSGK: "Chương III – Bài 15: Định luật 2 Newton",
+    badge: "Chương III • Động Lực Học",
     description: "Khảo sát mối quan hệ giữa gia tốc a, lực kéo F và khối lượng hệ (M + m). Sử dụng máy nén khí bơm đệm khí vào máng nhôm để triệt tiêu ma sát. Xe trượt khối lượng M gắn tấm chắn sáng rộng d = 20 mm đi qua 2 cổng quang E và F để đo vận tốc tức thời v1, v2 và tính gia tốc thực nghiệm a_tn.",
     equipmentList: [
       "Máng trượt đệm khí bằng nhôm hợp kim dài 1.5 m có vạch chia mm",
@@ -268,11 +268,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   friction: {
     id: "friction",
-    category: "module2",
+    category: "chuong3",
     title: "Khảo Sát Lực Ma Sát Trượt",
     subtitle: "Bài 18: Khối gỗ, lực kế kéo đều & các bề mặt tiếp xúc",
-    lessonSGK: "Bài 18 SGK Vật lí 10 (KNTT)",
-    badge: "Module 2 • Động lực học",
+    lessonSGK: "Chương III – Bài 18: Lực ma sát",
+    badge: "Chương III • Động Lực Học",
     description: "Khảo sát các yếu tố ảnh hưởng đến lực ma sát trượt: áp lực N lên mặt tiếp xúc, diện tích tiếp xúc và tính chất bề mặt (gỗ khô, giấy nhám, kim loại nhẵn). Kéo đều khối gỗ bằng lực kế: quan sát lực ma sát nghỉ cực đại F0 ngay trước khi chuyển động và lực ma sát trượt F_ms không đổi khi trượt đều. Vẽ đồ thị F_ms(N) suy ra hệ số ma sát mu.",
     equipmentList: [
       "Mặt bàn kéo phẳng nằm ngang dài 80 cm",
@@ -330,11 +330,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   concurrent_force: {
     id: "concurrent_force",
-    category: "module3",
+    category: "chuong3",
     title: "Tổng Hợp Lực Đồng Quy",
     subtitle: "Bài 22: Bảng thép, 2 lực kế kéo dây cao su & Quy tắc hình bình hành",
-    lessonSGK: "Bài 22 SGK Vật lí 10 (KNTT)",
-    badge: "Module 3 • Cân bằng lực",
+    lessonSGK: "Chương III – Bài 13: Tổng hợp và phân tích lực & Bài 22: Thực hành tổng hợp lực",
+    badge: "Chương III • Động Lực Học",
     description: "Kiểm chứng quy tắc hình bình hành lực. Sử dụng bảng thép gắn giấy trắng, kéo dây cao su bằng hai lực kế F1 và F2 hợp với nhau một góc alpha sao cho nút buộc dịch chuyển đến vị trí cân bằng O. Thay thế hai lực kế bằng một lực kế duy nhất kéo nút buộc đến đúng điểm O để xác định hợp lực thực nghiệm F_tn, so sánh với công thức lý thuyết F_lt.",
     equipmentList: [
       "Bảng thép từ tính kích thước 40 x 50 cm đặt thẳng đứng",
@@ -390,11 +390,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   moment_rule: {
     id: "moment_rule",
-    category: "module3",
+    category: "chuong3",
     title: "Cân Bằng Đĩa Quay & Quy Tắc Moment Lực",
     subtitle: "Bài 21: Đĩa tròn có trục quay O & các quả nặng ở bán kính khác nhau",
-    lessonSGK: "Bài 21 SGK Vật lí 10 (KNTT)",
-    badge: "Module 3 • Cân bằng lực",
+    lessonSGK: "Chương III – Bài 21: Moment lực. Cân bằng của vật rắn",
+    badge: "Chương III • Động Lực Học",
     description: "Khảo sát điều kiện cân bằng của một vật có trục quay cố định (quy tắc moment lực). Sử dụng đĩa tròn quay quanh trục tâm O không ma sát, trên đĩa có các lỗ tròn đồng tâm để móc các chùm quả nặng F1, F2 ở các cánh tay đòn d1, d2 khác nhau. Kiểm chứng tổng moment lực làm vật quay theo chiều kim đồng hồ bằng tổng moment làm vật quay ngược chiều kim đồng hồ.",
     equipmentList: [
       "Đĩa tròn kim loại nhẹ có trục quay tâm O nằm ngang không ma sát",
@@ -449,11 +449,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   pendulum_energy: {
     id: "pendulum_energy",
-    category: "module4",
+    category: "chuong4",
     title: "Bảo Toàn Cơ Năng Con Lắc Đơn",
     subtitle: "Bài 26: Thả con lắc từ góc theta0, biểu đồ Wđ - Wt - W & tiêu hao ma sát",
-    lessonSGK: "Bài 26 SGK Vật lí 10 (KNTT)",
-    badge: "Module 4 • Năng lượng",
+    lessonSGK: "Chương IV – Bài 25: Động năng, thế năng & Bài 26: Cơ năng và định luật bảo toàn cơ năng",
+    badge: "Chương IV • Năng Lượng, Công, Công Suất",
     description: "Khảo sát sự chuyển hóa qua lại giữa động năng và thế năng trong dao động của con lắc đơn. Đo vận tốc cực đại tại vị trí cân bằng qua cổng quang điện E. Biểu đồ cột động năng Wđ, thế năng Wt và cơ năng tổng W theo thời gian. Khảo sát trường hợp bảo toàn lý tưởng và trường hợp có lực cản không khí làm cơ năng suy hao thành nhiệt năng.",
     equipmentList: [
       "Giá thí nghiệm con lắc đơn có dây treo chiều dài l = 0.5 - 1.0 m",
@@ -510,11 +510,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   collision_momentum: {
     id: "collision_momentum",
-    category: "module4",
+    category: "chuong5",
     title: "Thực Hành Va Chạm & Bảo Toàn Động Lượng",
     subtitle: "Bài 30: Va chạm đàn hồi & va chạm mềm trên máng đệm khí",
-    lessonSGK: "Bài 30 SGK Vật lí 10 (KNTT)",
-    badge: "Module 4 • Năng lượng & Động lượng",
+    lessonSGK: "Chương V – Bài 28: Động lượng & Bài 29: Định luật bảo toàn động lượng & Bài 30: Thực hành xác định động lượng",
+    badge: "Chương V • Động Lượng",
     description: "Khảo sát định luật bảo toàn động lượng trong hệ kín. Sử dụng máng đệm khí và hai xe trượt m1, m2 chuyển động va chạm trực diện. Khảo sát 2 trường hợp: Va chạm đàn hồi (gắn lò xo lá đàn hồi, động năng và động lượng cùng bảo toàn) và Va chạm mềm (gắn mũi kim cắm sáp, dính liền sau va chạm). Đo vận tốc trước và sau qua cổng quang.",
     equipmentList: [
       "Máng trượt đệm khí nằm ngang chuẩn xác",
@@ -570,11 +570,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   hooke_law: {
     id: "hooke_law",
-    category: "module5",
+    category: "chuong7",
     title: "Khảo Sát Định Luật Hooke Của Lò Xo",
     subtitle: "Bài 33: Giá treo lò xo, thước mm & đo độ dãn delta_l theo lực đàn hồi",
-    lessonSGK: "Bài 33 SGK Vật lí 10 (KNTT)",
-    badge: "Module 5 • Biến dạng cơ",
+    lessonSGK: "Chương VII – Bài 33: Biến dạng của vật rắn",
+    badge: "Chương VII • Biến Dạng & Áp Suất",
     description: "Khảo sát mối quan hệ giữa độ lớn của lực đàn hồi F_đh và độ biến dạng (độ dãn) delta_l của lò xo xoắn ốc trong giới hạn đàn hồi. Treo lần lượt các quả nặng 50g, 100g, 150g, 200g, 250g vào lò xo, đọc chiều dài l trên thước milimet, tính delta_l = l - l0. Vẽ đồ thị F(delta_l), xác định độ cứng k từ hệ số góc đường thẳng.",
     equipmentList: [
       "Giá thí nghiệm thẳng đứng có chân đế vững chắc",
@@ -630,11 +630,11 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
 
   fluid_pressure: {
     id: "fluid_pressure",
-    category: "module5",
+    category: "chuong7",
     title: "Áp Suất Chất Lưu & Máy Thủy Lực",
     subtitle: "Bài 34: Áp kế màng theo độ sâu h & Định luật Pascal máy ép thủy lực",
-    lessonSGK: "Bài 34 SGK Vật lí 10 (KNTT)",
-    badge: "Module 5 • Chất lưu",
+    lessonSGK: "Chương VII – Bài 34: Khối lượng riêng. Áp suất chất lỏng",
+    badge: "Chương VII • Biến Dạng & Áp Suất",
     description: "Khảo sát định luật áp suất thủy tĩnh theo độ sâu: p = p0 + rho * g * h bằng áp kế màng cao su kết nối ống chữ U chứa chất lỏng màu. Khảo sát nguyên lý máy ép thủy lực (Định luật Pascal): lực tác dụng tỉ lệ với diện tích pít-tông F1/S1 = F2/S2 cho phép nâng vật nặng bằng một lực nhỏ.",
     equipmentList: [
       "Bình trụ trong suốt chứa nước cao 50 cm có thước đo độ sâu mm",
@@ -693,8 +693,8 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
     category: "assessment",
     title: "Phiếu Thực Hành Số & AI Chấm Điểm",
     subtitle: "Bài 3: Thực hành tính sai số, lập báo cáo và AI đánh giá Rubric GDPT 2018",
-    lessonSGK: "Bài 3 SGK Vật lí 10 (KNTT)",
-    badge: "Đánh giá • Chuẩn GDPT 2018",
+    lessonSGK: "Chương I – Bài 3: Thực hành tính sai số trong phép đo. Ghi kết quả đo",
+    badge: "Đánh Giá • Chuẩn GDPT 2018",
     description: "Biểu mẫu Báo cáo thực hành số chuyên nghiệp. Cho phép học sinh nhập hoặc đồng bộ tự động số liệu đo 5 lần từ bất kỳ phòng thí nghiệm nào. Tự động tính giá trị trung bình, sai số ngẫu nhiên, sai số tuyệt đối, sai số tỉ đối, viết kết quả đúng quy tắc số có nghĩa. Tích hợp AI chấm điểm sư phạm theo Rubric 4 mức độ và xuất file in A4/PDF.",
     equipmentList: [
       "Máy vi tính / máy tính bảng thu thập số liệu thực nghiệm",

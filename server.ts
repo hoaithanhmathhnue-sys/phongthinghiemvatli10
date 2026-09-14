@@ -10,40 +10,109 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ============================================================
+// FALLBACK & ERROR HANDLING — Tuân thủ api.md v4.1
+// ============================================================
+
+const FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-pro",
+] as const;
+
+const DEFAULT_MODEL = "gemini-2.5-flash";
+
+type ApiErrorType = "MODEL_OVERLOADED" | "QUOTA_EXCEEDED" | "INVALID_API_KEY" | "INVALID_ARGUMENT" | "NOT_FOUND" | "UNKNOWN";
+
+const parseApiError = (error: any): ApiErrorType => {
+  const message = error?.message || error?.toString() || "";
+  const serialized = JSON.stringify(error) || "";
+  const combined = `${message} ${serialized}`.toLowerCase();
+
+  if (serialized.includes("429") || combined.includes("resource_exhausted") || combined.includes("quota")) return "QUOTA_EXCEEDED";
+  if (serialized.includes("503") || serialized.includes("504") || combined.includes("unavailable") || combined.includes("high demand") || combined.includes("overloaded") || combined.includes("try again later")) return "MODEL_OVERLOADED";
+  if (serialized.includes("404") || combined.includes("not_found")) return "NOT_FOUND";
+  if (combined.includes("api_key_invalid") || serialized.includes("401") || combined.includes("permission_denied") || serialized.includes("403")) return "INVALID_API_KEY";
+  if (serialized.includes("400") || combined.includes("invalid_argument")) return "INVALID_ARGUMENT";
+  return "UNKNOWN";
+};
+
+const getOrderedModels = (selectedModel?: string): string[] => {
+  const fallbackList = [...FALLBACK_MODELS];
+  if (!selectedModel) return [DEFAULT_MODEL, ...fallbackList.filter(m => m !== DEFAULT_MODEL)];
+  return [selectedModel, ...fallbackList.filter(m => m !== selectedModel)];
+};
+
+const generateContentWithFallback = async (
+  ai: GoogleGenAI,
+  { contents, config, selectedModel }: { contents: any; config?: any; selectedModel?: string }
+) => {
+  const models = getOrderedModels(selectedModel);
+  let lastError: any = null;
+  const firstModel = models[0];
+
+  for (const model of models) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        ...(config ? { config } : {}),
+      });
+      return { text: response.text || "", modelUsed: model, fallbackUsed: model !== firstModel };
+    } catch (error: any) {
+      lastError = error;
+      const errorType = parseApiError(error);
+      console.warn(`[Gemini Fallback] Model "${model}" failed with ${errorType}: ${error.message?.substring(0, 120)}`);
+      if (errorType === "INVALID_API_KEY" || errorType === "QUOTA_EXCEEDED" || errorType === "INVALID_ARGUMENT" || errorType === "UNKNOWN") break;
+    }
+  }
+  throw lastError || new Error("Tất cả model Gemini đều không phản hồi. Vui lòng thử lại sau.");
+};
+
+const getFriendlyErrorMessage = (error: any): { message: string; statusCode: number } => {
+  const errorType = parseApiError(error);
+  switch (errorType) {
+    case "INVALID_API_KEY": return { message: "API Key không hợp lệ hoặc đã hết hạn.", statusCode: 401 };
+    case "QUOTA_EXCEEDED": return { message: "Đã hết quota hoặc vượt giới hạn tốc độ API. Vui lòng đợi rồi thử lại.", statusCode: 429 };
+    case "MODEL_OVERLOADED": return { message: "Model đang quá tải; app đang tự động thử model dự phòng.", statusCode: 503 };
+    case "NOT_FOUND": return { message: "Model không khả dụng.", statusCode: 404 };
+    case "INVALID_ARGUMENT": return { message: "Yêu cầu không hợp lệ.", statusCode: 400 };
+    default: return { message: "Lỗi xử lý yêu cầu AI.", statusCode: 500 };
+  }
+};
+
+// ============================================================
+// SERVER
+// ============================================================
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json({ limit: "5mb" }));
 
-  // Initialize Gemini AI Client lazily/safely
+  // Initialize Gemini AI Client — Client Factory duy nhất (api.md Section III)
   const getAiClient = (customKey?: string) => {
     const key = customKey || process.env.GEMINI_API_KEY;
     if (!key) return null;
-    return new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
+    return new GoogleGenAI({ apiKey: key });
   };
 
-  // API Routes
+  // Health Check
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
       hasServerKey: !!process.env.GEMINI_API_KEY,
       appName: "Physics AI-Lab 10",
-      version: "1.0.0",
+      version: "2.0.0",
+      defaultModel: DEFAULT_MODEL,
     });
   });
 
-  // AI Tutor Chat Route
+  // AI Tutor Chat Route — với Model Fallback
   app.post("/api/gemini/chat", async (req, res) => {
     try {
-      const { message, history = [], currentLabContext, customKey } = req.body;
+      const { message, history = [], currentLabContext, labId, customKey } = req.body;
       const ai = getAiClient(customKey);
 
       if (!ai) {
@@ -55,7 +124,7 @@ async function startServer() {
 
       const systemPrompt = `Bạn là Trợ lý AI Sư phạm Vật lí lớp 10 (Physics AI Tutor), đồng thời là Giảng viên Sư phạm Vật lí thực nghiệm.
 Chương trình giảng dạy: Vật lí 10 - Chương trình GDPT 2018 (Bộ sách Kết nối tri thức với cuộc sống).
-Thí nghiệm học sinh đang làm hiện tại:
+Thí nghiệm học sinh đang làm hiện tại (labId: ${labId || "chưa xác định"}):
 ${JSON.stringify(currentLabContext || {}, null, 2)}
 
 Nhiệm vụ của bạn:
@@ -63,9 +132,10 @@ Nhiệm vụ của bạn:
 2. Áp dụng phương pháp gợi mở Socratic: không vội cho đáp án ngay mà hướng dẫn học sinh quan sát đồ thị, dụng cụ đo (đồng hồ hiện số MC964, cổng quang, thước mm, lực kế).
 3. Hướng dẫn tính toán sai số, quy tắc viết số có nghĩa (theo Bài 3 SGK).
 4. Khuyến khích học sinh liên hệ hiện tượng thực tế (ví dụ: an toàn giao thông, dù lượn, cân bằng xe, giảm sóc lò xo).
-5. Trình bày công thức bằng định dạng Markdown rõ ràng ($...$ hoặc $$...$$).`;
+5. Trình bày công thức bằng định dạng Markdown với ký hiệu LaTeX/MathJax: dùng \\( ... \\) cho inline hoặc \\[ ... \\] cho block. Không dùng $...$ vì khó phân biệt với ký hiệu tiền tệ.
+6. Khi viết công thức, hãy viết rõ ràng, chuẩn LaTeX. Ví dụ: \\( g = \\frac{2s}{t^2} \\) hoặc \\[ v = v_0 + at \\]`;
 
-      const contents = [];
+      const contents: any[] = [];
       for (const h of history) {
         contents.push({
           role: h.role === "user" ? "user" : "model",
@@ -77,27 +147,26 @@ Nhiệm vụ của bạn:
         parts: [{ text: message }],
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+      const result = await generateContentWithFallback(ai, {
         contents,
         config: {
           systemInstruction: systemPrompt,
-          temperature: 0.7,
         },
       });
 
       return res.json({
-        reply: response.text || "AI đã ghi nhận câu hỏi nhưng chưa có phản hồi thích hợp.",
+        reply: result.text || "AI đã ghi nhận câu hỏi nhưng chưa có phản hồi thích hợp.",
+        modelUsed: result.modelUsed,
+        fallbackUsed: result.fallbackUsed,
       });
     } catch (err: any) {
       console.error("Gemini Chat Error:", err);
-      return res.status(500).json({
-        error: err.message || "Lỗi xử lý yêu cầu AI.",
-      });
+      const friendly = getFriendlyErrorMessage(err);
+      return res.status(friendly.statusCode).json({ error: friendly.message });
     }
   });
 
-  // AI Automated Grading Route for Laboratory Reports (Bài 3 SGK GDPT 2018)
+  // AI Automated Grading Route — với Model Fallback
   app.post("/api/gemini/grade", async (req, res) => {
     try {
       const { reportData, customKey } = req.body;
@@ -117,95 +186,66 @@ ${JSON.stringify(reportData, null, 2)}
 YÊU CẦU ĐÁNH GIÁ CHUYÊN SÂU:
 1. Đánh giá kết quả đo, việc tính toán giá trị trung bình, sai số tuyệt đối, sai số tỉ đối và cách biểu diễn kết quả theo Bài 3 SGK (A = A_tb ± ΔA).
 2. PHÂN TÍCH NGUYÊN NHÂN TIỀM ẨN GÂY RA SAI SỐ DỰA TRÊN BÀI THÍ NGHIỆM CỤ THỂ theo 3 nhóm cốt lõi:
-   - Sai số hệ thống (Systematic error): Do giới hạn dụng cụ đo (độ chia nhỏ nhất thước cặp 0.02mm, thước mm 1mm, đồng hồ đo thời gian MC964 0.001s, độ trễ rơ-le điện từ cổng quang điện, ma sát ổ trục đĩa quay hoặc rãnh đệm khí, độ dãn dư của lò xo...).
-   - Sai số ngẫu nhiên (Random error): Do thao tác của học sinh (nhìn nghiêng lệch vạch chia parallax, căn chỉnh cổng quang điện chưa chuẩn trực, bấm nhả chốt nam châm, đặt vật chưa đúng vạch xuất phát...).
-   - Sai số do môi trường (Environmental error): Lực cản không khí, luồng gió quạt phòng thí nghiệm, rung lắc mặt bàn, nhiệt độ/độ ẩm môi trường ảnh hưởng đến độ nhớt hoặc độ đàn hồi...
-3. ĐƯA RA BIỆN PHÁP KHẮC PHỤC / GIẢM THIỂU CỤ THỂ cho từng loại sai số trong các lần thực hành tiếp theo.
-4. Đánh giá mức độ năng lực đạt được theo Chương trình GDPT 2018:
-   - Mức 1 - Chưa đạt (Dưới 5.0): Số liệu sai lệch quá lớn, không tính sai số, trả lời tự luận sai bản chất vật lí.
-   - Mức 2 - Đạt (5.0 - 6.5): Số liệu đo được nhưng còn nhầm lẫn số chữ số có nghĩa hoặc sai số.
-   - Mức 3 - Khá (7.0 - 8.5): Đo đạc và tính đúng sai số, giải thích đúng cơ bản hiện tượng vật lí.
-   - Mức 4 - Tốt / Xuất sắc (9.0 - 10.0): Thao tác chuẩn mực, tính sai số chính xác, nhận diện thấu đáo nguồn sai số và đề xuất giải pháp giảm thiểu mang tính khoa học cao.
+   - Sai số hệ thống (Systematic error)
+   - Sai số ngẫu nhiên (Random error)
+   - Sai số do môi trường (Environmental error)
+3. ĐƯA RA BIỆN PHÁP KHẮC PHỤC / GIẢM THIỂU CỤ THỂ cho từng loại sai số.
+4. Đánh giá mức độ năng lực đạt được theo GDPT 2018.
+
+QUAN TRỌNG: Khi viết công thức vật lí, hãy dùng ký hiệu LaTeX/MathJax: \\( ... \\) cho inline hoặc \\[ ... \\] cho block.
 
 Hãy trả về phản hồi DUY NHẤT dưới dạng chuỗi JSON thuần với cấu trúc chính xác sau:
 {
   "totalScore": 8.5,
   "level": "Mức 3 - Khá",
-  "gdptCompetencyLevel": "Đạt chuẩn năng lực Tìm hiểu thế giới tự nhiên dưới góc độ vật lí (Mức Khá)",
-  "dataAccuracyReview": "Nhận xét chi tiết về độ hội tụ và tính hợp lí của dãy số liệu đo đạc...",
-  "errorCalculationReview": "Nhận xét về các bước tính sai số ngẫu nhiên, sai số dụng cụ, quy tắc làm tròn...",
-  "theoryQuestionsReview": "Nhận xét về 2 câu trả lời tự luận và khả năng vận dụng kiến thức bài học...",
+  "gdptCompetencyLevel": "...",
+  "dataAccuracyReview": "...",
+  "errorCalculationReview": "...",
+  "theoryQuestionsReview": "...",
   "errorSources": {
-    "systematicError": {
-      "analysis": "Phân tích cụ thể nguyên nhân sai số hệ thống trong bài thí nghiệm này...",
-      "mitigation": "Biện pháp kỹ thuật để giảm thiểu hoặc hiệu chuẩn sai số hệ thống..."
-    },
-    "randomError": {
-      "analysis": "Phân tích nguyên nhân sai số ngẫu nhiên do thao tác người thực hiện...",
-      "mitigation": "Quy tắc thao tác chuẩn giúp giảm thiểu sai số ngẫu nhiên trong lần đo tới..."
-    },
-    "environmentalError": {
-      "analysis": "Phân tích các yếu tố môi trường (lực cản không khí, rung lắc...) ảnh hưởng kết quả...",
-      "mitigation": "Cách thiết lập môi trường phòng thí nghiệm tối ưu hơn..."
-    }
+    "systematicError": { "analysis": "...", "mitigation": "..." },
+    "randomError": { "analysis": "...", "mitigation": "..." },
+    "environmentalError": { "analysis": "...", "mitigation": "..." }
   },
-  "strengths": ["Ưu điểm nổi bật 1", "Ưu điểm nổi bật 2"],
-  "improvements": ["Điểm cần khắc phục 1", "Điểm cần khắc phục 2"],
-  "teacherAdvice": "Lời dặn dò sư phạm ân cần định hướng phát triển năng lực nghiên cứu..."
+  "strengths": ["...", "..."],
+  "improvements": ["...", "..."],
+  "teacherAdvice": "..."
 }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+      const result = await generateContentWithFallback(ai, {
         contents: prompt,
         config: {
           responseMimeType: "application/json",
-          temperature: 0.3,
         },
       });
 
       let parsedResult;
       try {
-        parsedResult = JSON.parse(response.text || "{}");
-      } catch (pErr) {
+        parsedResult = JSON.parse(result.text || "{}");
+      } catch (_pErr) {
         parsedResult = {
           totalScore: 8.0,
           level: "Mức 3 - Khá",
           gdptCompetencyLevel: "Đạt chuẩn năng lực Tìm hiểu thế giới tự nhiên dưới góc độ vật lí (Mức Khá)",
-          dataAccuracyReview: "Dãy số liệu thực nghiệm đo đạc có độ tin cậy tốt, thể hiện tính lặp lại ổn định giữa các lần đo.",
+          dataAccuracyReview: "Dãy số liệu thực nghiệm đo đạc có độ tin cậy tốt.",
           errorCalculationReview: "Học sinh đã áp dụng đúng công thức tính giá trị trung bình và xác định sai số theo Bài 3 SGK.",
-          theoryQuestionsReview: "Trả lời tốt các câu hỏi bản chất vật lí và cơ chế chuyển động.",
+          theoryQuestionsReview: "Trả lời tốt các câu hỏi bản chất vật lí.",
           errorSources: {
-            systematicError: {
-              analysis: "Độ trễ điện từ của rơ-le ngắt nam châm và độ phân giải của cổng quang điện MC964 (độ chia nhỏ nhất 0.001s).",
-              mitigation: "Cần hiệu chỉnh zero cho thiết bị trước khi đo, kiểm tra độ nhạy của cảm biến quang điện."
-            },
-            randomError: {
-              analysis: "Mắt quan sát vạch gióng không vuông góc tuyệt đối dẫn đến sai số góc nhìn (parallax error), thời điểm bấm nút chốt nhả.",
-              mitigation: "Đặt tầm mắt ngang bằng vuông góc với vạch chia trên thước, thực hiện đo lặp lại từ 5 lần trở lên để triệt tiêu sai số ngẫu nhiên."
-            },
-            environmentalError: {
-              analysis: "Lực cản của môi trường không khí và các rung chấn vi mô trên mặt bàn thí nghiệm.",
-              mitigation: "Thực hiện thí nghiệm trong phòng kín gió, đặt chân giá đỡ vững chắc trên mặt bàn phẳng chống rung."
-            }
+            systematicError: { analysis: "Độ trễ điện từ của rơ-le ngắt nam châm và độ phân giải của cổng quang điện MC964.", mitigation: "Cần hiệu chỉnh zero cho thiết bị trước khi đo." },
+            randomError: { analysis: "Sai số góc nhìn parallax khi đọc thước đo.", mitigation: "Đặt tầm mắt ngang bằng vuông góc với vạch chia." },
+            environmentalError: { analysis: "Lực cản không khí và rung chấn mặt bàn.", mitigation: "Thực hiện thí nghiệm trong phòng kín gió." },
           },
-          strengths: [
-            "Thu thập đầy đủ các lần đo theo yêu cầu",
-            "Biểu diễn kết quả đúng quy tắc chuẩn A = A_tb ± ΔA"
-          ],
-          improvements: [
-            "Cần lưu ý kiểm soát sai số góc nhìn parallax khi đọc thước đo",
-            "Phân tích sâu hơn mối liên hệ giữa các đại lượng đo"
-          ],
-          teacherAdvice: "Em đã có tinh thần thực nghiệm khoa học rất tốt! Hãy tiếp tục duy trì phương pháp đo cẩn trọng và phân tích sai số sâu sắc trong các bài tiếp theo.",
+          strengths: ["Thu thập đầy đủ số liệu", "Biểu diễn kết quả đúng quy tắc"],
+          improvements: ["Kiểm soát sai số parallax", "Phân tích sâu hơn"],
+          teacherAdvice: "Em đã có tinh thần thực nghiệm tốt! Hãy tiếp tục phát triển.",
         };
       }
 
-      return res.json({ result: parsedResult, evaluation: parsedResult });
+      return res.json({ result: parsedResult, evaluation: parsedResult, modelUsed: result.modelUsed });
     } catch (err: any) {
       console.error("Gemini Grading Error:", err);
-      return res.status(500).json({
-        error: err.message || "Lỗi chấm điểm tự động từ AI.",
-      });
+      const friendly = getFriendlyErrorMessage(err);
+      return res.status(friendly.statusCode).json({ error: friendly.message });
     }
   });
 

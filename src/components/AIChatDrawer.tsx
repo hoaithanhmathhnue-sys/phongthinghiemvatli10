@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { LabId, ChatMessage } from "../types";
 import { LAB_CATALOG } from "../data/labCatalog";
+import { MathRenderer } from "./MathRenderer";
 import { 
   X, 
   Send, 
@@ -371,11 +372,15 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
               <div
                 className={`max-w-[82%] rounded-2xl p-3 text-xs leading-relaxed shadow-sm transition-all ${
                   isBot
-                    ? "bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"
+                    ? "bg-white border border-slate-200 text-black"
                     : "bg-blue-600 text-white"
                 }`}
               >
-                <div className="whitespace-pre-wrap">{m.text}</div>
+                {isBot ? (
+                  <MathRenderer content={m.text} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{m.text}</div>
+                )}
                 
                 <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
                   {isBot ? (

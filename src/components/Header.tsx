@@ -37,33 +37,33 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const modules = [
+  const chapters = [
     {
-      name: "Module 0: Nền Tảng",
+      name: "Chương I. Mở Đầu",
       labs: ["safety_measure"] as LabId[],
     },
     {
-      name: "Module 1: Động Học",
+      name: "Chương II. Động Học",
       labs: ["free_fall", "projectile"] as LabId[],
     },
     {
-      name: "Module 2: Động Lực Học",
-      labs: ["newton2", "friction"] as LabId[],
+      name: "Chương III. Động Lực Học",
+      labs: ["newton2", "friction", "concurrent_force", "moment_rule"] as LabId[],
     },
     {
-      name: "Module 3: Cân Bằng & Moment",
-      labs: ["concurrent_force", "moment_rule"] as LabId[],
+      name: "Chương IV. Năng Lượng, Công, Công Suất",
+      labs: ["pendulum_energy"] as LabId[],
     },
     {
-      name: "Module 4: Năng Lượng & Động Lượng",
-      labs: ["pendulum_energy", "collision_momentum"] as LabId[],
+      name: "Chương V. Động Lượng",
+      labs: ["collision_momentum"] as LabId[],
     },
     {
-      name: "Module 5: Biến Dạng & Chất Lưu",
+      name: "Chương VII. Biến Dạng Vật Rắn & Áp Suất Chất Lỏng",
       labs: ["hooke_law", "fluid_pressure"] as LabId[],
     },
     {
-      name: "Tương Tác Tự Do",
+      name: "Thí Nghiệm Tương Tác Tự Do",
       labs: ["free_sandbox"] as LabId[],
     },
     {
@@ -139,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-72 sm:w-96 max-h-[75vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 text-xs"
               id="dropdown-experiment-list"
             >
-              {modules.map((m, mIdx) => (
+              {chapters.map((m, mIdx) => (
                 <div key={mIdx} className="mb-2 last:mb-0">
                   <div className="px-2 py-1 font-semibold text-slate-400 uppercase tracking-wider text-[10px] bg-slate-950/60 rounded flex items-center gap-1.5">
                     <Layers className="w-3 h-3 text-cyan-400" />

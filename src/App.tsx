@@ -8,6 +8,10 @@ import { DataTable } from "./components/DataTable";
 import { AIChatDrawer } from "./components/AIChatDrawer";
 import { ReportModal } from "./components/ReportModal";
 import { SettingsModal } from "./components/SettingsModal";
+import { SimSetupModal } from "./components/SimSetupModal";
+import { ExperimentLog, LogEntry } from "./components/ExperimentLog";
+import { MiniChart } from "./components/MiniChart";
+import { VisitCounter } from "./components/VisitCounter";
 import { labAudio } from "./utils/physicsEngine";
 import { 
   Sparkles, 
@@ -23,14 +27,19 @@ export default function App() {
   const [currentLabId, setCurrentLabId] = useState<LabId>("free_fall");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [resetKey, setResetKey] = useState<number>(0);
 
   // Modal / Drawer visibility
   const [isAIOpen, setIsAIOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isSimSetupOpen, setIsSimSetupOpen] = useState<boolean>(false);
 
   // Instrument error (Δxdc)
   const [instrumentError, setInstrumentError] = useState<number>(0.001);
+
+  // Experiment log entries
+  const [experimentLog, setExperimentLog] = useState<LogEntry[]>([]);
 
   // Dynamic parameters state for each lab
   const [params, setParams] = useState<Record<string, any>>({
@@ -144,8 +153,14 @@ export default function App() {
   const handleToggleRun = () => {
     setIsRunning((prev) => {
       const next = !prev;
-      if (next && soundEnabled) {
-        labAudio.playClick();
+      if (next) {
+        setExperimentLog((log) => [
+          ...log,
+          { time: 0, event: "Bắt đầu thí nghiệm", type: "start" },
+        ]);
+        if (soundEnabled) {
+          labAudio.playClick();
+        }
       }
       return next;
     });
@@ -154,6 +169,11 @@ export default function App() {
   // Reset simulation state
   const handleReset = () => {
     setIsRunning(false);
+    setResetKey((k) => k + 1);
+    setExperimentLog((log) => [
+      ...log,
+      { time: 0, event: "Đặt lại thí nghiệm", type: "reset" },
+    ]);
     if (soundEnabled) {
       labAudio.playClick();
     }
@@ -183,6 +203,17 @@ export default function App() {
         [currentLabId]: [...labList, newRec],
       };
     });
+
+    // Log the auto-recorded event
+    setExperimentLog((log) => [
+      ...log,
+      {
+        time: 0,
+        event: `Ghi nhận lần đo #${(recordsByLab[currentLabId]?.length || 0) + 1}`,
+        type: "record",
+        value: `p1=${data.param1.toFixed(3)}, p2=${data.param2.toFixed(3)}`,
+      },
+    ]);
   };
 
   // Manual record trial button handler
@@ -301,6 +332,7 @@ export default function App() {
         onSelectLab={(id) => {
           setCurrentLabId(id);
           setIsRunning(false);
+          setExperimentLog([]);
         }}
         onOpenAITutor={() => setIsAIOpen(true)}
         onOpenReport={() => setIsReportOpen(true)}
@@ -340,6 +372,14 @@ export default function App() {
             <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
             <span>Thầy AI Sư Phạm: "Em cần trợ giúp gì trong bài này?"</span>
           </button>
+
+          <button
+            onClick={() => setIsSimSetupOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600/10 to-teal-600/10 hover:from-emerald-600/20 hover:to-teal-600/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition-all hover:scale-[1.02]"
+          >
+            <Atom className="w-4 h-4 text-emerald-500" />
+            <span>Thiết lập mô phỏng</span>
+          </button>
         </div>
 
         {/* 2-Column Responsive Workspace: Canvas + Controls */}
@@ -352,6 +392,17 @@ export default function App() {
               isRunning={isRunning}
               onAutoRecordTrial={handleAutoRecordTrial}
               soundEnabled={soundEnabled}
+              resetKey={resetKey}
+              onLogEvent={(entry: LogEntry) =>
+                setExperimentLog((log) => [...log, entry])
+              }
+            />
+
+            {/* Experiment Log Timeline */}
+            <ExperimentLog
+              labId={currentLabId}
+              entries={experimentLog}
+              isRunning={isRunning}
             />
 
             {/* Scientific Data & Statistical Analysis Table below Canvas */}
@@ -362,6 +413,12 @@ export default function App() {
               onDeleteRecord={handleDeleteRecord}
               onClearRecords={handleClearRecords}
               instrumentError={instrumentError}
+            />
+
+            {/* Mini Realtime Chart */}
+            <MiniChart
+              labId={currentLabId}
+              records={currentRecords}
             />
           </div>
 
@@ -422,6 +479,11 @@ export default function App() {
         soundEnabled={soundEnabled}
       />
 
+      {/* Visit Counter Footer */}
+      <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <VisitCounter />
+      </div>
+
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => setIsReportOpen(false)}
@@ -437,6 +499,11 @@ export default function App() {
         onToggleSound={() => setSoundEnabled(!soundEnabled)}
         instrumentError={instrumentError}
         onChangeInstrumentError={setInstrumentError}
+      />
+
+      <SimSetupModal
+        isOpen={isSimSetupOpen}
+        onClose={() => setIsSimSetupOpen(false)}
       />
     </div>
   );

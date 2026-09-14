@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { LabId, MeasurementRecord, EvaluationReport } from "../types";
+import { MathRenderer } from "./MathRenderer";
 import { LAB_CATALOG, getLabColumnHeaders } from "../data/labCatalog";
 import { calculateStatisticalError } from "../utils/physicsEngine";
 import { 
@@ -202,9 +203,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
               {lab?.description}
             </p>
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-xs">
+            <div className="p-3 bg-white rounded-xl border border-slate-200 font-mono text-xs">
               <span className="text-slate-500 font-sans font-semibold">Công thức toán học áp dụng: </span>
-              <strong className="text-blue-600 dark:text-cyan-400">{lab?.formula}</strong>
+              <MathRenderer content={lab?.formula || ""} className="inline text-blue-600 font-bold" />
             </div>
           </div>
 
@@ -383,7 +384,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                       <span>Độ chính xác số liệu & Dãy đo:</span>
                     </div>
                     <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
-                      {evaluation.dataAccuracyReview}
+                      <MathRenderer content={evaluation.dataAccuracyReview} />
                     </p>
                   </div>
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
@@ -392,7 +393,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                       <span>Tính toán & Quy tắc làm tròn sai số:</span>
                     </div>
                     <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
-                      {evaluation.errorCalculationReview}
+                      <MathRenderer content={evaluation.errorCalculationReview} />
                     </p>
                   </div>
                 </div>
@@ -413,10 +414,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                           <span>1. Sai số hệ thống (Thiết bị)</span>
                         </div>
                         <div className="text-[11px] leading-relaxed">
-                          <strong>Nguyên nhân:</strong> {evaluation.errorSources.systematicError.analysis}
+                          <strong>Nguyên nhân:</strong> <MathRenderer content={evaluation.errorSources.systematicError.analysis} />
                         </div>
                         <div className="p-2 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-amber-500/20 text-[11px] text-amber-900 dark:text-amber-300">
-                          <strong>Giải pháp:</strong> {evaluation.errorSources.systematicError.mitigation}
+                          <strong>Giải pháp:</strong> <MathRenderer content={evaluation.errorSources.systematicError.mitigation} />
                         </div>
                       </div>
 
@@ -427,10 +428,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                           <span>2. Sai số ngẫu nhiên (Thao tác)</span>
                         </div>
                         <div className="text-[11px] leading-relaxed">
-                          <strong>Nguyên nhân:</strong> {evaluation.errorSources.randomError.analysis}
+                          <strong>Nguyên nhân:</strong> <MathRenderer content={evaluation.errorSources.randomError.analysis} />
                         </div>
                         <div className="p-2 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-blue-500/20 text-[11px] text-blue-900 dark:text-blue-300">
-                          <strong>Giải pháp:</strong> {evaluation.errorSources.randomError.mitigation}
+                          <strong>Giải pháp:</strong> <MathRenderer content={evaluation.errorSources.randomError.mitigation} />
                         </div>
                       </div>
 
@@ -441,10 +442,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                           <span>3. Sai số môi trường (Bên ngoài)</span>
                         </div>
                         <div className="text-[11px] leading-relaxed">
-                          <strong>Nguyên nhân:</strong> {evaluation.errorSources.environmentalError.analysis}
+                          <strong>Nguyên nhân:</strong> <MathRenderer content={evaluation.errorSources.environmentalError.analysis} />
                         </div>
                         <div className="p-2 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-teal-500/20 text-[11px] text-teal-900 dark:text-teal-300">
-                          <strong>Giải pháp:</strong> {evaluation.errorSources.environmentalError.mitigation}
+                          <strong>Giải pháp:</strong> <MathRenderer content={evaluation.errorSources.environmentalError.mitigation} />
                         </div>
                       </div>
                     </div>
@@ -458,7 +459,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                       Nhận xét phần trả lời câu hỏi lý thuyết:
                     </div>
                     <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
-                      {evaluation.theoryQuestionsReview}
+                      <MathRenderer content={evaluation.theoryQuestionsReview} />
                     </p>
                   </div>
                 )}

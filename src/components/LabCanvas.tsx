@@ -8,6 +8,8 @@ interface LabCanvasProps {
   isRunning: boolean;
   onAutoRecordTrial?: (data: { param1: number; param2: number; calculated1?: number; calculated2?: number }) => void;
   soundEnabled: boolean;
+  resetKey?: number;
+  onLogEvent?: (entry: { time: number; event: string; type: "start" | "gate" | "record" | "collision" | "info" | "reset"; value?: string }) => void;
 }
 
 export const LabCanvas: React.FC<LabCanvasProps> = ({
@@ -16,6 +18,8 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
   isRunning,
   onAutoRecordTrial,
   soundEnabled,
+  resetKey = 0,
+  onLogEvent,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameId = useRef<number | null>(null);
@@ -25,6 +29,15 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
   const [mc964Active, setMc964Active] = useState<boolean>(false);
   const [gateETriggered, setGateETriggered] = useState<boolean>(false);
   const [gateFTriggered, setGateFTriggered] = useState<boolean>(false);
+
+  // Particle system for visual effects
+  const particles = useRef<Array<{
+    x: number; y: number; vx: number; vy: number;
+    life: number; maxLife: number; color: string; size: number;
+  }>>([]);
+
+  // Container ref for ResizeObserver
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Local physics simulation states
   const simState = useRef({
@@ -149,7 +162,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     setMc964Active(false);
     setGateETriggered(false);
     setGateFTriggered(false);
-  }, [labId, params]);
+  }, [labId, params, resetKey]);
 
   // Main 60 FPS Canvas Physics Loop
   useEffect(() => {
@@ -231,6 +244,27 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
           renderGenericLab(ctx, width, height);
       }
 
+      // Update and render particles
+      const ps = particles.current;
+      for (let i = ps.length - 1; i >= 0; i--) {
+        const p = ps[i];
+        p.life += dt;
+        if (p.life >= p.maxLife) {
+          ps.splice(i, 1);
+          continue;
+        }
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 120 * dt; // gravity on particles
+        const alpha = 1 - p.life / p.maxLife;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
       animFrameId.current = requestAnimationFrame(render);
     };
 
@@ -289,6 +323,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
         setGateETriggered(true);
         setMc964Active(true);
         if (soundEnabled) labAudio.playGateBeep(920, 0.06);
+        onLogEvent?.({ time: s.time, event: "Cổng quang E kích hoạt", type: "gate" });
       }
 
       // Update timer while between E and F
@@ -312,6 +347,20 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
 
         setMc964Time(exactTime);
         if (soundEnabled) labAudio.playGateBeep(650, 0.1);
+        onLogEvent?.({ time: s.time, event: "Cổng quang F kích hoạt", type: "gate", value: `t = ${exactTime.toFixed(4)}s` });
+
+        // Spawn impact particles
+        for (let i = 0; i < 12; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 30 + Math.random() * 60;
+          particles.current.push({
+            x: colX, y: gateFY,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 20,
+            life: 0, maxLife: 0.5 + Math.random() * 0.3,
+            color: `hsl(${45 + Math.random() * 20}, 100%, ${60 + Math.random() * 30}%)`,
+            size: 1.5 + Math.random() * 2,
+          });
+        }
 
         if (onAutoRecordTrial) {
           const tSq = exactTime * exactTime;
@@ -833,11 +882,11 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     ctx.beginPath();
     ctx.moveTo(curCartX + cartW, trackY - 10);
     ctx.lineTo(pulleyX, pulleyY - 14);
-    ctx.lineTo(pulleyX + 14, pulleyY + (s.cartX - 40) * 0.5 + 40);
+    ctx.lineTo(pulleyX + 14, Math.min(h - 30, pulleyY + (s.cartX - 40) * 0.5 + 40));
     ctx.stroke();
 
-    // Hanging weight
-    const hangY = pulleyY + (s.cartX - 40) * 0.5 + 40;
+    // Hanging weight — clamp to stay within canvas
+    const hangY = Math.min(h - 30, pulleyY + (s.cartX - 40) * 0.5 + 40);
     ctx.fillStyle = "#f59e0b";
     ctx.fillRect(pulleyX + 5, hangY, 18, 26);
     ctx.fillStyle = "#ffffff";
@@ -1352,6 +1401,21 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       if (s.c1X + cartW >= s.c2X && !s.collisionRecorded) {
         s.collisionRecorded = true;
         if (soundEnabled) labAudio.playCollision();
+        onLogEvent?.({ time: s.time, event: "Va chạm xảy ra!", type: "collision", value: `${type === "elastic" ? "Đàn hồi" : "Mềm"}` });
+
+        // Spawn collision particles
+        const collisionX = (s.c1X + cartW + s.c2X) / 2;
+        for (let i = 0; i < 20; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 40 + Math.random() * 80;
+          particles.current.push({
+            x: collisionX, y: trackY - cartH / 2,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            life: 0, maxLife: 0.4 + Math.random() * 0.4,
+            color: `hsl(${200 + Math.random() * 60}, 100%, ${70 + Math.random() * 20}%)`,
+            size: 2 + Math.random() * 2.5,
+          });
+        }
 
         const u1 = s.c1Vx;
         const u2 = s.c2Vx;
@@ -1464,7 +1528,10 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
         }
       }
     } else {
-      s.springY = targetDeflectionMm;
+      // Khi chưa chạy: lò xo ở trạng thái tự nhiên (chưa treo quả nặng)
+      s.springY = 0;
+      s.springVy = 0;
+      s.cartRecorded = false;
     }
 
     const standX = w * 0.35;
@@ -2021,24 +2088,24 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       }
       drawVector(ctx, ballCanvasX, ballCanvasY, ballCanvasX, ballCanvasY + g * 2.5, "#ef4444", "P=mg");
 
-      // 6. Real-time Telemetry Card at Bottom Left
+      // 6. Real-time Telemetry Card at Top Right (below HUD bar)
       ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
       ctx.strokeStyle = "#38bdf8";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(20, h - 165, 270, 95, 10);
+      ctx.roundRect(w - 290, 55, 270, 95, 10);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = "#38bdf8";
       ctx.font = "bold 11px sans-serif";
-      ctx.fillText("THÔNG SỐ ĐỘNG HỌC THỜI GIAN THỰC", 32, h - 145);
+      ctx.fillText("THÔNG SỐ ĐỘNG HỌC THỜI GIAN THỰC", w - 278, 75);
 
       ctx.fillStyle = "#e2e8f0";
       ctx.font = "11px 'JetBrains Mono', monospace";
-      ctx.fillText(`Tọa độ:  x = ${s.sandboxX.toFixed(2)} m | y = ${s.sandboxY.toFixed(2)} m`, 32, h - 125);
-      ctx.fillText(`Vận tốc: v = ${curV.toFixed(2)} m/s (vx: ${s.sandboxVx.toFixed(1)}, vy: ${s.sandboxVy.toFixed(1)})`, 32, h - 105);
-      ctx.fillText(`Thời gian bay: t = ${s.time.toFixed(3)} s`, 32, h - 85);
+      ctx.fillText(`Tọa độ:  x = ${s.sandboxX.toFixed(2)} m | y = ${s.sandboxY.toFixed(2)} m`, w - 278, 95);
+      ctx.fillText(`Vận tốc: v = ${curV.toFixed(2)} m/s (vx: ${s.sandboxVx.toFixed(1)}, vy: ${s.sandboxVy.toFixed(1)})`, w - 278, 115);
+      ctx.fillText(`Thời gian bay: t = ${s.time.toFixed(3)} s`, w - 278, 135);
     }
 
     // ----------------------------------------------------
@@ -2415,7 +2482,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] rounded-xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-950">
+    <div ref={containerRef} className="relative w-full h-[480px] sm:h-[540px] lg:h-[600px] rounded-xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-950">
       <canvas
         ref={canvasRef}
         width={900}
