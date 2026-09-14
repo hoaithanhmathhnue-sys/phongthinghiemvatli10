@@ -1022,17 +1022,22 @@ export const LabControls: React.FC<LabControlsProps> = ({
       </div>
 
       {/* Theoretical Formula Reference Box */}
-      <div className="p-3.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-xs">
-        <div className="flex items-center gap-1.5 font-semibold text-blue-900 dark:text-blue-300 mb-1">
-          <Info className="w-3.5 h-3.5" />
+      <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-slate-900/90 border border-blue-200 dark:border-blue-800/60 shadow-xs text-xs space-y-2.5">
+        <div className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-cyan-300 tracking-wide text-xs">
+          <Info className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
           <span>CƠ SỞ LÝ THUYẾT & CÔNG THỨC SGK</span>
         </div>
-        <div className="font-mono text-blue-950 dark:text-white bg-white/70 dark:bg-slate-900/80 p-2 rounded border border-blue-200/60 dark:border-blue-800/40 text-center font-bold tracking-wide [&_mjx-container]:!text-inherit">
-          <MathRenderer content={"\\(" + lab.formula + "\\)"} />
+        <div className="font-mono text-blue-950 dark:text-cyan-200 bg-white dark:bg-slate-950/80 p-2.5 rounded-lg border border-blue-200/80 dark:border-blue-700/60 text-center font-bold tracking-wide shadow-xs [&_mjx-container]:!text-inherit">
+          <MathRenderer content={"\\(" + lab.formula + "\\)"} className="text-blue-950 dark:text-cyan-200 font-bold" inline />
         </div>
-        <ul className="mt-2 space-y-1 text-slate-600 dark:text-slate-300 text-[11px] list-disc list-inside [&_mjx-container]:!text-inherit">
+        <ul className="space-y-1.5 text-[11.5px]">
           {lab.principles.slice(0, 2).map((p, idx) => (
-            <li key={idx} className="leading-snug"><MathRenderer content={p} /></li>
+            <li key={idx} className="flex items-start gap-2 leading-relaxed text-slate-700 dark:text-slate-200">
+              <span className="text-blue-500 dark:text-cyan-400 font-bold shrink-0 mt-0.5">•</span>
+              <div className="flex-1 text-slate-700 dark:text-slate-200 font-medium">
+                <MathRenderer content={p} className="inline text-slate-700 dark:text-slate-200" inline />
+              </div>
+            </li>
           ))}
         </ul>
       </div>

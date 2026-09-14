@@ -203,9 +203,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
               {lab?.description}
             </p>
-            <div className="p-3 bg-white rounded-xl border border-slate-200 font-mono text-xs">
-              <span className="text-slate-500 font-sans font-semibold">Công thức toán học áp dụng: </span>
-              <MathRenderer content={lab?.formula || ""} className="inline text-blue-600 font-bold" />
+            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs">
+              <span className="text-slate-500 dark:text-slate-400 font-sans font-semibold">Công thức toán học áp dụng: </span>
+              <MathRenderer content={lab?.formula || ""} className="inline text-blue-600 dark:text-cyan-400 font-bold" inline />
             </div>
           </div>
 

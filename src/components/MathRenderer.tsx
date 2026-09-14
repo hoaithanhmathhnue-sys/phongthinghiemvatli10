@@ -14,6 +14,7 @@ import React, { useRef, useEffect } from "react";
 interface MathRendererProps {
   content: string;
   className?: string;
+  inline?: boolean;
 }
 
 /** Convert basic Markdown to HTML */
@@ -101,8 +102,8 @@ const markdownToHtml = (text: string): string => {
   return html;
 };
 
-export const MathRenderer: React.FC<MathRendererProps> = ({ content, className = "" }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+export const MathRenderer: React.FC<MathRendererProps> = ({ content, className = "", inline = false }) => {
+  const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // Trigger MathJax typesetting after content renders
@@ -119,12 +120,18 @@ export const MathRenderer: React.FC<MathRendererProps> = ({ content, className =
     }
   }, [content]);
 
-  const html = markdownToHtml(content);
+  let html = markdownToHtml(content);
+  if (inline) {
+    // Loại bỏ thẻ <p> bọc ngoài cùng khi render inline
+    html = html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+  }
+
+  const Tag = inline ? "span" : "div";
 
   return (
-    <div
-      ref={containerRef}
-      className={`math-renderer ${className}`}
+    <Tag
+      ref={containerRef as any}
+      className={`math-renderer ${inline ? "inline" : ""} ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

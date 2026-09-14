@@ -34,16 +34,17 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-      /* MathRenderer styles — chữ đen nền trắng cho AI content */
+      /* MathRenderer styles — Tương thích hoàn hảo cả sáng và tối */
       .math-renderer {
-        color: #1a1a1a;
+        color: inherit;
         line-height: 1.7;
         font-size: 13px;
       }
       .math-renderer p { margin: 0.25em 0; }
-      .math-renderer strong { font-weight: 700; color: #111; }
+      .math-renderer strong { font-weight: 700; color: inherit; }
       .math-renderer em { font-style: italic; }
       .math-renderer .math-heading { font-weight: 700; margin: 0.5em 0 0.25em; color: #1e3a5f; }
+      .dark .math-renderer .math-heading { color: #93c5fd; }
       .math-renderer h2.math-heading { font-size: 1.1em; }
       .math-renderer h3.math-heading { font-size: 1em; }
       .math-renderer h4.math-heading { font-size: 0.95em; }
@@ -56,17 +57,31 @@
         padding: 8px 12px; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
         font-size: 12px; margin: 0.4em 0; white-space: pre-wrap;
       }
+      .dark .math-renderer .math-code-block {
+        background: #1e293b; border-color: #334155; color: #e2e8f0;
+      }
       .math-renderer .math-inline-code {
         background: #f0f0f0; padding: 1px 5px; border-radius: 3px;
         font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      }
+      .dark .math-renderer .math-inline-code {
+        background: #334155; color: #e2e8f0;
       }
       .math-renderer .math-block {
         text-align: center; margin: 0.6em 0; padding: 0.4em;
         background: #fafafa; border-radius: 6px; border: 1px solid #eee;
       }
+      .dark .math-renderer .math-block {
+        background: #0f172a; border-color: #1e293b; color: inherit;
+      }
       .math-renderer .math-inline { display: inline; }
-      /* Đảm bảo MathJax output cũng chữ đen */
-      .math-renderer .MathJax { color: #1a1a1a !important; }
+      /* MathJax output kế thừa màu chữ container để thích ứng chuẩn xác Light / Dark mode */
+      .math-renderer .MathJax,
+      .math-renderer mjx-container,
+      .math-renderer mjx-container * {
+        color: inherit !important;
+        fill: currentColor !important;
+      }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-600 selection:text-white">

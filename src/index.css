@@ -3,10 +3,20 @@
 /* === Theme Toggle: dark mode via class strategy === */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* === MathJax color inheritance for dark mode === */
-.dark mjx-container,
-.dark mjx-container * {
+/* === MathJax color inheritance for dark mode & light mode === */
+mjx-container,
+mjx-container *,
+.MathJax,
+.MathJax * {
   color: inherit !important;
+}
+
+.dark mjx-container,
+.dark mjx-container *,
+.dark .MathJax,
+.dark .MathJax * {
+  color: inherit !important;
+  fill: currentColor !important;
 }
 
 /* === Smooth theme transition === */
