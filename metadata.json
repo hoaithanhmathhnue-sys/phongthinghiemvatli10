@@ -1,0 +1,6 @@
+{
+  "name": "Physics AI-Lab 10",
+  "description": "Phòng thí nghiệm ảo môn Vật lí lớp 10 tích hợp trí tuệ nhân tạo sư phạm theo Chương trình GDPT 2018 (SGK Kết nối tri thức).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
