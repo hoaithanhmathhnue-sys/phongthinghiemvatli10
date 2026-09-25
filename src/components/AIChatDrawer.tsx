@@ -271,7 +271,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-sm flex items-center gap-1.5">
-              <span>Trợ Lý AI Sư Phạm Vật Lí</span>
+              <span>Trợ lý AI sư phạm Vật lí</span>
               <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-blue-900/60 border border-blue-400/30">
                 Socratic
               </span>

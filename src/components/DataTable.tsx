@@ -131,7 +131,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             {records.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-slate-400 font-sans">
-                  Chưa có số liệu đo nào. Nhấn <strong>"Bắt Đầu"</strong> rồi <strong>"Lưu Vào Bảng Số Liệu"</strong> để ghi dữ liệu đo.
+                  Chưa có số liệu đo nào. Nhấn <strong>"Bắt đầu"</strong> rồi <strong>"Lưu vào bảng số liệu"</strong> để ghi dữ liệu đo.
                 </td>
               </tr>
             ) : (

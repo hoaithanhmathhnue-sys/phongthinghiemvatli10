@@ -27,10 +27,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   safety_measure: {
     id: "safety_measure",
     category: "chuong1",
-    title: "An Toàn & Kỹ Thuật Đo Lường Phòng Lab",
+    title: "An toàn & kỹ thuật đo lường phòng lab",
     subtitle: "Bài 2 & 3: Quy tắc an toàn, đồng hồ MC964 & thước kẹp du xích Vernier",
     lessonSGK: "Chương I – Bài 2: Các quy tắc an toàn trong phòng thực hành Vật lí & Bài 3: Thực hành tính sai số",
-    badge: "Chương I • Mở Đầu",
+    badge: "Chương I • Mở đầu",
     description: "Khảo sát nguyên tắc an toàn điện, quang, cơ học trong phòng thí nghiệm. Rèn luyện kỹ năng đọc dụng cụ đo chuẩn xác: đồng hồ hiện số MC964 với các chế độ cổng quang điện và thước cặp cơ khí Vernier 0.02 mm.",
     equipmentList: [
       "Bộ nguồn xoay chiều/một chiều 0-12V an toàn",
@@ -83,10 +83,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   free_fall: {
     id: "free_fall",
     category: "chuong2",
-    title: "Thực Hành Đo Gia Tốc Rơi Tự Do",
+    title: "Thực hành đo gia tốc rơi tự do",
     subtitle: "Bài 10 & 11: Cột trụ thẳng đứng, nam châm điện & 2 cổng quang E - F",
     lessonSGK: "Chương II – Bài 10: Sự rơi tự do & Bài 11: Thực hành đo gia tốc rơi tự do",
-    badge: "Chương II • Động Học",
+    badge: "Chương II • Động học",
     description: "Khảo sát chuyển động rơi tự do của viên bi thép dưới tác dụng của trọng lực. Đo thời gian rơi giữa hai cổng quang E và F ở các khoảng cách s khác nhau. Vẽ đồ thị s - t² và xác định gia tốc rơi tự do g từ hệ số góc đường hồi quy.",
     equipmentList: [
       "Trụ thẳng đứng có giá đỡ và thước milimet 1000 mm",
@@ -144,10 +144,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   projectile: {
     id: "projectile",
     category: "chuong2",
-    title: "Chuyển Động Ném Ngang & Ném Xiên",
+    title: "Chuyển động ném ngang & ném xiên",
     subtitle: "Bài 12: Thả rơi bi A đồng thời ném ngang bi B (Hình 12.1 SGK)",
     lessonSGK: "Chương II – Bài 12: Chuyển động ném",
-    badge: "Chương II • Động Học",
+    badge: "Chương II • Động học",
     description: "Tái hiện nguyên bản thí nghiệm Hình 12.1 SGK: Dùng búa gõ bật chốt đẩy bi B chuyển động ném ngang đồng thời thả rơi tự do bi A từ cùng độ cao H. Khảo sát quỹ đạo ném xiên các góc từ 0° đến 75°, phân tích vector vận tốc v_x, v_y, tầm bay xa L và tầm bay cao H_max.",
     equipmentList: [
       "Khung thí nghiệm ném ngang có thanh thép đàn hồi và búa gõ",
@@ -162,7 +162,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Chuyển động ném xiên góc alpha: x = (v0 cos alpha) * t; y = H + (v0 sin alpha) * t - 0.5 * g * t²",
       "Tầm xa cực đại đạt được khi góc ném alpha = 45° (bỏ qua cản không khí)",
     ],
-    formula: "y = \\frac{g}{2v_0^2}x^2; \\quad L = v_0 \\sqrt{\\frac{2H}{g}}; \\quad L_{\\text{xiên}} = \\frac{v_0^2 \\sin(2\\alpha)}{g}",
+    formula: "y = \\frac{g}{2v_0^2}x^2; \\quad L = v_0 \\sqrt{\\frac{2H}{g}} \\\\ L_{\\text{xiên}} = \\frac{v_0^2 \\sin(2\\alpha)}{g}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.projectile,
     defaultParams: {
       initialHeightH: 1.2, // m
@@ -205,10 +205,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   newton2: {
     id: "newton2",
     category: "chuong3",
-    title: "Kiểm Chứng Định Luật II Newton",
+    title: "Kiểm chứng định luật II Newton",
     subtitle: "Bài 15: Máng trượt đệm khí không ma sát & 2 cổng quang điện",
     lessonSGK: "Chương III – Bài 15: Định luật 2 Newton",
-    badge: "Chương III • Động Lực Học",
+    badge: "Chương III • Động lực học",
     description: "Khảo sát mối quan hệ giữa gia tốc a, lực kéo F và khối lượng hệ (M + m). Sử dụng máy nén khí bơm đệm khí vào máng nhôm để triệt tiêu ma sát. Xe trượt khối lượng M gắn tấm chắn sáng rộng d = 20 mm đi qua 2 cổng quang E và F để đo vận tốc tức thời v1, v2 và tính gia tốc thực nghiệm a_tn.",
     equipmentList: [
       "Máng trượt đệm khí bằng nhôm hợp kim dài 1.5 m có vạch chia mm",
@@ -225,7 +225,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Gia tốc thực nghiệm: a_tn = (v2² - v1²) / (2s)",
       "Khi tắt đệm khí, ma sát trượt cản trở chuyển động làm a_tn giảm rõ rệt",
     ],
-    formula: "a_{\\text{lt}} = \\frac{m \\cdot g}{M + m}; \\quad a_{\\text{tn}} = \\frac{v_2^2 - v_1^2}{2s}; \\quad v = \\frac{d}{\\Delta t}",
+    formula: "a_{\\text{lt}} = \\frac{m \\cdot g}{M + m}; \\quad a_{\\text{tn}} = \\frac{v_2^2 - v_1^2}{2s} \\\\ v = \\frac{d}{\\Delta t}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.newton2,
     defaultParams: {
       gliderMassM: 0.200, // kg (200g)
@@ -269,10 +269,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   friction: {
     id: "friction",
     category: "chuong3",
-    title: "Khảo Sát Lực Ma Sát Trượt",
+    title: "Khảo sát lực ma sát trượt",
     subtitle: "Bài 18: Khối gỗ, lực kế kéo đều & các bề mặt tiếp xúc",
     lessonSGK: "Chương III – Bài 18: Lực ma sát",
-    badge: "Chương III • Động Lực Học",
+    badge: "Chương III • Động lực học",
     description: "Khảo sát các yếu tố ảnh hưởng đến lực ma sát trượt: áp lực N lên mặt tiếp xúc, diện tích tiếp xúc và tính chất bề mặt (gỗ khô, giấy nhám, kim loại nhẵn). Kéo đều khối gỗ bằng lực kế: quan sát lực ma sát nghỉ cực đại F0 ngay trước khi chuyển động và lực ma sát trượt F_ms không đổi khi trượt đều. Vẽ đồ thị F_ms(N) suy ra hệ số ma sát mu.",
     equipmentList: [
       "Mặt bàn kéo phẳng nằm ngang dài 80 cm",
@@ -288,7 +288,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Hệ số ma sát trượt mu phụ thuộc vào vật liệu và tình trạng của hai bề mặt tiếp xúc",
       "Lực ma sát nghỉ cực đại F0 luôn lớn hơn một chút so với lực ma sát trượt F_ms",
     ],
-    formula: "F_{\\text{ms}} = \\mu \\cdot N; \\quad N = P = (M_{\\text{gỗ}} + m_{\\text{tải}}) \\cdot g; \\quad \\mu = \\text{slope của } F_{\\text{ms}}(N)",
+    formula: "F_{\\text{ms}} = \\mu \\cdot N; \\quad N = (M_{\\text{gỗ}} + m_{\\text{tải}}) \\cdot g \\\\ \\mu = \\text{slope của } F_{\\text{ms}}(N)",
     columnHeaders: DEFAULT_COLUMN_HEADERS.friction,
     defaultParams: {
       surfaceType: "wood", // wood, sandpaper, steel
@@ -331,10 +331,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   concurrent_force: {
     id: "concurrent_force",
     category: "chuong3",
-    title: "Tổng Hợp Lực Đồng Quy",
+    title: "Tổng hợp lực đồng quy",
     subtitle: "Bài 22: Bảng thép, 2 lực kế kéo dây cao su & Quy tắc hình bình hành",
     lessonSGK: "Chương III – Bài 13: Tổng hợp và phân tích lực & Bài 22: Thực hành tổng hợp lực",
-    badge: "Chương III • Động Lực Học",
+    badge: "Chương III • Động lực học",
     description: "Kiểm chứng quy tắc hình bình hành lực. Sử dụng bảng thép gắn giấy trắng, kéo dây cao su bằng hai lực kế F1 và F2 hợp với nhau một góc alpha sao cho nút buộc dịch chuyển đến vị trí cân bằng O. Thay thế hai lực kế bằng một lực kế duy nhất kéo nút buộc đến đúng điểm O để xác định hợp lực thực nghiệm F_tn, so sánh với công thức lý thuyết F_lt.",
     equipmentList: [
       "Bảng thép từ tính kích thước 40 x 50 cm đặt thẳng đứng",
@@ -391,10 +391,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   moment_rule: {
     id: "moment_rule",
     category: "chuong3",
-    title: "Cân Bằng Đĩa Quay & Quy Tắc Moment Lực",
+    title: "Cân bằng đĩa quay & quy tắc moment lực",
     subtitle: "Bài 21: Đĩa tròn có trục quay O & các quả nặng ở bán kính khác nhau",
     lessonSGK: "Chương III – Bài 21: Moment lực. Cân bằng của vật rắn",
-    badge: "Chương III • Động Lực Học",
+    badge: "Chương III • Động lực học",
     description: "Khảo sát điều kiện cân bằng của một vật có trục quay cố định (quy tắc moment lực). Sử dụng đĩa tròn quay quanh trục tâm O không ma sát, trên đĩa có các lỗ tròn đồng tâm để móc các chùm quả nặng F1, F2 ở các cánh tay đòn d1, d2 khác nhau. Kiểm chứng tổng moment lực làm vật quay theo chiều kim đồng hồ bằng tổng moment làm vật quay ngược chiều kim đồng hồ.",
     equipmentList: [
       "Đĩa tròn kim loại nhẹ có trục quay tâm O nằm ngang không ma sát",
@@ -407,7 +407,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Moment lực đối với trục quay: M = F * d (N·m), với d là cánh tay đòn (khoảng cách từ trục quay đến giá của lực)",
       "Quy tắc moment: Muốn cho một vật có trục quay cố định ở trạng thái cân bằng, tổng moment lực có xu hướng làm vật quay theo chiều kim đồng hồ phải bằng tổng moment lực có xu hướng làm vật quay ngược chiều kim đồng hồ: M_thuận = M_ngược",
     ],
-    formula: "M = F \\cdot d; \\quad \\sum M_{\\text{thuận}} = \\sum M_{\\text{nghịch}} \\iff F_1 \\cdot d_1 = F_2 \\cdot d_2",
+    formula: "M = F \\cdot d \\\\ \\sum M_{\\text{thuận}} = \\sum M_{\\text{nghịch}} \\iff F_1 \\cdot d_1 = F_2 \\cdot d_2",
     columnHeaders: DEFAULT_COLUMN_HEADERS.moment_rule,
     defaultParams: {
       leftMassG: 100, // g -> F1 = 0.98 N
@@ -450,10 +450,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   pendulum_energy: {
     id: "pendulum_energy",
     category: "chuong4",
-    title: "Bảo Toàn Cơ Năng Con Lắc Đơn",
+    title: "Bảo toàn cơ năng con lắc đơn",
     subtitle: "Bài 26: Thả con lắc từ góc theta0, biểu đồ Wđ - Wt - W & tiêu hao ma sát",
     lessonSGK: "Chương IV – Bài 25: Động năng, thế năng & Bài 26: Cơ năng và định luật bảo toàn cơ năng",
-    badge: "Chương IV • Năng Lượng, Công, Công Suất",
+    badge: "Chương IV • Năng lượng, công, công suất",
     description: "Khảo sát sự chuyển hóa qua lại giữa động năng và thế năng trong dao động của con lắc đơn. Đo vận tốc cực đại tại vị trí cân bằng qua cổng quang điện E. Biểu đồ cột động năng Wđ, thế năng Wt và cơ năng tổng W theo thời gian. Khảo sát trường hợp bảo toàn lý tưởng và trường hợp có lực cản không khí làm cơ năng suy hao thành nhiệt năng.",
     equipmentList: [
       "Giá thí nghiệm con lắc đơn có dây treo chiều dài l = 0.5 - 1.0 m",
@@ -469,7 +469,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Tại vị trí biên: v = 0 => Wd = 0, Wt = W_max = m * g * l * (1 - cos theta0)",
       "Tại vị trí cân bằng: h = 0 => Wt = 0, Wd = W_max => v_max = sqrt(2 * g * l * (1 - cos theta0))",
     ],
-    formula: "W = W_đ + W_t = \\frac{1}{2}mv^2 + mgl(1-\\cos\\theta) = \\text{hằng số}; \\quad v_{\\max} = \\sqrt{2gl(1-\\cos\\theta_0)}",
+    formula: "W = W_đ + W_t = \\frac{1}{2}mv^2 + mgl(1-\\cos\\theta) = \\text{hằng số} \\\\ v_{\\max} = \\sqrt{2gl(1-\\cos\\theta_0)}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.pendulum_energy,
     defaultParams: {
       stringLengthL: 0.8, // m (80cm)
@@ -511,10 +511,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   collision_momentum: {
     id: "collision_momentum",
     category: "chuong5",
-    title: "Thực Hành Va Chạm & Bảo Toàn Động Lượng",
+    title: "Thực hành va chạm & bảo toàn động lượng",
     subtitle: "Bài 30: Va chạm đàn hồi & va chạm mềm trên máng đệm khí",
     lessonSGK: "Chương V – Bài 28: Động lượng & Bài 29: Định luật bảo toàn động lượng & Bài 30: Thực hành xác định động lượng",
-    badge: "Chương V • Động Lượng",
+    badge: "Chương V • Động lượng",
     description: "Khảo sát định luật bảo toàn động lượng trong hệ kín. Sử dụng máng đệm khí và hai xe trượt m1, m2 chuyển động va chạm trực diện. Khảo sát 2 trường hợp: Va chạm đàn hồi (gắn lò xo lá đàn hồi, động năng và động lượng cùng bảo toàn) và Va chạm mềm (gắn mũi kim cắm sáp, dính liền sau va chạm). Đo vận tốc trước và sau qua cổng quang.",
     equipmentList: [
       "Máng trượt đệm khí nằm ngang chuẩn xác",
@@ -527,7 +527,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Va chạm mềm: Sau va chạm hai vật dính liền cùng vận tốc V = (m1*v1 + m2*v2) / (m1 + m2)",
       "Va chạm đàn hồi: Cả động lượng và động năng đều bảo toàn",
     ],
-    formula: "m_1 \\vec{v}_1 + m_2 \\vec{v}_2 = m_1 \\vec{v}_1' + m_2 \\vec{v}_2'; \\quad V_{\\text{mềm}} = \\frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}",
+    formula: "m_1 \\vec{v}_1 + m_2 \\vec{v}_2 = m_1 \\vec{v}_1' + m_2 \\vec{v}_2' \\\\ V_{\\text{mềm}} = \\frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.collision_momentum,
     defaultParams: {
       collisionType: "elastic", // elastic vs inelastic
@@ -571,10 +571,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   hooke_law: {
     id: "hooke_law",
     category: "chuong7",
-    title: "Khảo Sát Định Luật Hooke Của Lò Xo",
+    title: "Khảo sát định luật Hooke của lò xo",
     subtitle: "Bài 33: Giá treo lò xo, thước mm & đo độ dãn delta_l theo lực đàn hồi",
     lessonSGK: "Chương VII – Bài 33: Biến dạng của vật rắn",
-    badge: "Chương VII • Biến Dạng & Áp Suất",
+    badge: "Chương VII • Biến dạng & áp suất",
     description: "Khảo sát mối quan hệ giữa độ lớn của lực đàn hồi F_đh và độ biến dạng (độ dãn) delta_l của lò xo xoắn ốc trong giới hạn đàn hồi. Treo lần lượt các quả nặng 50g, 100g, 150g, 200g, 250g vào lò xo, đọc chiều dài l trên thước milimet, tính delta_l = l - l0. Vẽ đồ thị F(delta_l), xác định độ cứng k từ hệ số góc đường thẳng.",
     equipmentList: [
       "Giá thí nghiệm thẳng đứng có chân đế vững chắc",
@@ -590,7 +590,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Đồ thị F theo delta_l là đường thẳng đi qua gốc tọa độ có độ dốc chính là độ cứng k của lò xo",
       "Khi vượt quá giới hạn đàn hồi, đồ thị bị uốn cong và lò xo không thể co về l0 ban đầu",
     ],
-    formula: "F_{\\text{đh}} = k \\cdot |\\Delta l| = k \\cdot |l - l_0|; \\quad k = \\frac{\\Delta F}{\\Delta(\\Delta l)} = \\text{độ dốc đồ thị}",
+    formula: "F_{\\text{đh}} = k \\cdot |\\Delta l| = k \\cdot |l - l_0| \\\\ k = \\frac{\\Delta F}{\\Delta(\\Delta l)} = \\text{độ dốc đồ thị}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.hooke_law,
     defaultParams: {
       initialLengthL0Mm: 100, // mm
@@ -631,10 +631,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   fluid_pressure: {
     id: "fluid_pressure",
     category: "chuong7",
-    title: "Áp Suất Chất Lưu & Máy Thủy Lực",
+    title: "Áp suất chất lưu & máy thủy lực",
     subtitle: "Bài 34: Áp kế màng theo độ sâu h & Định luật Pascal máy ép thủy lực",
     lessonSGK: "Chương VII – Bài 34: Khối lượng riêng. Áp suất chất lỏng",
-    badge: "Chương VII • Biến Dạng & Áp Suất",
+    badge: "Chương VII • Biến dạng & áp suất",
     description: "Khảo sát định luật áp suất thủy tĩnh theo độ sâu: p = p0 + rho * g * h bằng áp kế màng cao su kết nối ống chữ U chứa chất lỏng màu. Khảo sát nguyên lý máy ép thủy lực (Định luật Pascal): lực tác dụng tỉ lệ với diện tích pít-tông F1/S1 = F2/S2 cho phép nâng vật nặng bằng một lực nhỏ.",
     equipmentList: [
       "Bình trụ trong suốt chứa nước cao 50 cm có thước đo độ sâu mm",
@@ -691,10 +691,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   digital_report: {
     id: "digital_report",
     category: "assessment",
-    title: "Phiếu Thực Hành Số & AI Chấm Điểm",
+    title: "Phiếu thực hành số & AI chấm điểm",
     subtitle: "Bài 3: Thực hành tính sai số, lập báo cáo và AI đánh giá Rubric GDPT 2018",
     lessonSGK: "Chương I – Bài 3: Thực hành tính sai số trong phép đo. Ghi kết quả đo",
-    badge: "Đánh Giá • Chuẩn GDPT 2018",
+    badge: "Đánh giá • Chuẩn GDPT 2018",
     description: "Biểu mẫu Báo cáo thực hành số chuyên nghiệp. Cho phép học sinh nhập hoặc đồng bộ tự động số liệu đo 5 lần từ bất kỳ phòng thí nghiệm nào. Tự động tính giá trị trung bình, sai số ngẫu nhiên, sai số tuyệt đối, sai số tỉ đối, viết kết quả đúng quy tắc số có nghĩa. Tích hợp AI chấm điểm sư phạm theo Rubric 4 mức độ và xuất file in A4/PDF.",
     equipmentList: [
       "Máy vi tính / máy tính bảng thu thập số liệu thực nghiệm",
@@ -710,7 +710,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Sai số tỉ đối: delta_A(%) = (delta_A / A_tb) * 100%",
       "Quy tắc viết kết quả đo: A = A_tb ± delta_A",
     ],
-    formula: "\\bar{A} = \\frac{1}{n}\\sum_{i=1}^n A_i; \\quad \\Delta A = \\overline{\\Delta A} + \\Delta A_{\\text{dc}}; \\quad \\delta A = \\frac{\\Delta A}{\\bar{A}} \\times 100\\%",
+    formula: "\\bar{A} = \\frac{1}{n}\\sum_{i=1}^n A_i; \\quad \\Delta A = \\overline{\\Delta A} + \\Delta A_{\\text{dc}} \\\\ \\delta A = \\frac{\\Delta A}{\\bar{A}} \\times 100\\%",
     columnHeaders: DEFAULT_COLUMN_HEADERS.digital_report,
     defaultParams: {},
     paramUnits: {},
@@ -743,10 +743,10 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
   free_sandbox: {
     id: "free_sandbox",
     category: "sandbox",
-    title: "Thí Nghiệm Tương Tác Tự Do",
+    title: "Thí nghiệm tương tác tự do",
     subtitle: "Phòng thí nghiệm Sandbox: Tự do thiết lập tham số ban đầu & chạy mô phỏng vật lí đa mô hình",
     lessonSGK: "Khám phá & Nghiên cứu Khoa học Tự do (GDPT 2018)",
-    badge: "Sandbox Mở • Đa mô hình",
+    badge: "Sandbox mở • Đa mô hình",
     description: "Không gian thí nghiệm mở (Interactive Sandbox) cho phép người dùng tự do lựa chọn các mô hình vật lí cơ bản (Chuyển động ném ngang & xiên, Xe trượt định luật II Newton, Con lắc đơn bảo toàn cơ năng, Dao động lò xo đàn hồi). Tự do tùy chỉnh toàn bộ thông số: vận tốc đầu, góc bắn, độ cao, khối lượng, lực kéo, gia tốc trọng trường g (Trái Đất, Mặt Trăng, Sao Hỏa), hệ số ma sát và sức cản không khí.",
     equipmentList: [
       "Bộ phóng vật ném đa năng (tùy biến v0 từ 0-30 m/s, góc từ -90° đến +90°)",
@@ -761,7 +761,7 @@ export const LAB_CATALOG: Record<LabId, LabDefinition> = {
       "Con lắc đơn: Thế năng Wt = m·g·L·(1 - cosθ), Động năng Wđ = 0.5·m·v²; Cơ năng bảo toàn khi bỏ qua ma sát",
       "Lò xo biến dạng: Lực hồi phục F = -k·x; Dao động điều hòa với chu kỳ T = 2π·√(m/k)",
     ],
-    formula: "\\vec{F}_{\\text{hl}} = m\\vec{a}; \\quad W = W_đ + W_t = \\text{const}; \\quad \\vec{F}_{\\text{cản}} = -k\\vec{v}",
+    formula: "\\vec{F}_{\\text{hl}} = m\\vec{a}; \\quad W = W_đ + W_t = \\text{const} \\\\ \\vec{F}_{\\text{cản}} = -k\\vec{v}",
     columnHeaders: DEFAULT_COLUMN_HEADERS.free_sandbox,
     defaultParams: {
       modelType: "projectile", // 'projectile' | 'newton' | 'pendulum' | 'spring'

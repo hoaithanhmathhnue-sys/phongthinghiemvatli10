@@ -46,35 +46,35 @@ export const Header: React.FC<HeaderProps> = ({
 
   const chapters = [
     {
-      name: "Chương I. Mở Đầu",
+      name: "Chương I. Mở đầu",
       labs: ["safety_measure"] as LabId[],
     },
     {
-      name: "Chương II. Động Học",
+      name: "Chương II. Động học",
       labs: ["free_fall", "projectile"] as LabId[],
     },
     {
-      name: "Chương III. Động Lực Học",
+      name: "Chương III. Động lực học",
       labs: ["newton2", "friction", "concurrent_force", "moment_rule"] as LabId[],
     },
     {
-      name: "Chương IV. Năng Lượng, Công, Công Suất",
+      name: "Chương IV. Năng lượng, công, công suất",
       labs: ["pendulum_energy"] as LabId[],
     },
     {
-      name: "Chương V. Động Lượng",
+      name: "Chương V. Động lượng",
       labs: ["collision_momentum"] as LabId[],
     },
     {
-      name: "Chương VII. Biến Dạng Vật Rắn & Áp Suất Chất Lỏng",
+      name: "Chương VII. Biến dạng vật rắn & áp suất chất lỏng",
       labs: ["hooke_law", "fluid_pressure"] as LabId[],
     },
     {
-      name: "Thí Nghiệm Tương Tác Tự Do",
+      name: "Thí nghiệm tương tác tự do",
       labs: ["free_sandbox"] as LabId[],
     },
     {
-      name: "Đánh Giá Thực Hành",
+      name: "Đánh giá thực hành",
       labs: ["digital_report"] as LabId[],
     },
   ];
@@ -87,14 +87,14 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 border-b border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
         <div className="flex items-center space-x-2">
           <GraduationCap className="w-4 h-4 text-cyan-400" />
-          <span className="font-medium text-slate-300">TRƯỜNG ĐH SƯ PHẠM HÀ NỘI • KHOA VẬT LÍ</span>
+          <span className="font-medium text-slate-300">TRƯỜNG THPT KHÚC THỪA DỤ • MÔN VẬT LÝ</span>
           <span className="hidden md:inline text-slate-600">|</span>
           <span className="hidden md:inline text-slate-400">Đề tài NCKH: Phòng thí nghiệm ảo Vật lí 10</span>
         </div>
         <div className="flex items-center space-x-2">
           <span className="px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300 font-semibold border border-blue-700/50 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-            GDPT 2018 • Sư Phạm AI
+            GDPT 2018 • Sư phạm AI
           </span>
           <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-teal-900/60 text-teal-300 font-semibold border border-teal-700/50">
             Sách KNTT
@@ -122,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
               </h1>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Phòng Thí Nghiệm Ảo Vật Lí Thực Nghiệm Lớp 10
+              Phòng thí nghiệm ảo Vật lí thực nghiệm lớp 10
             </p>
           </div>
         </div>
@@ -195,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Mở Trợ lý AI Sư phạm (Socratic + Gemini)"
           >
             <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-            <span className="hidden sm:inline">Trợ Lý AI</span>
+            <span className="hidden sm:inline">Trợ lý AI</span>
             <span className="sm:hidden">AI</span>
           </button>
 
@@ -204,10 +204,10 @@ export const Header: React.FC<HeaderProps> = ({
             id="btn-open-report-sheet"
             onClick={onOpenReport}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-teal-600/20 transition-all hover:scale-[1.02] active:scale-95"
-            title="Mở Phiếu Báo Cáo Thực Hành Số"
+            title="Mở phiếu báo cáo thực hành số"
           >
             <FileText className="w-4 h-4" />
-            <span className="hidden md:inline">Phiếu Báo Cáo</span>
+            <span className="hidden md:inline">Phiếu báo cáo</span>
           </button>
 
           {/* Sound Toggle */}

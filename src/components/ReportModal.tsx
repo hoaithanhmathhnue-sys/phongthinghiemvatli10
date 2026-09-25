@@ -132,7 +132,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs font-semibold flex items-center gap-1.5 transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>In Phiếu</span>
+              <span>In phiếu</span>
             </button>
             <button
               onClick={onClose}
@@ -327,7 +327,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
           </div>
 
-          {/* Section 5: Đánh giá & Chấm điểm tự động bởi AI Sư Phạm (GDPT 2018) */}
+          {/* Section 5: Đánh giá & Chấm điểm tự động bởi AI sư phạm (GDPT 2018) */}
           <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -347,12 +347,12 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 {isGrading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>AI Đang Phân Tích & Chấm Điểm...</span>
+                    <span>AI đang phân tích & chấm điểm...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 text-yellow-300" />
-                    <span>Chấm Điểm & Phân Tích Sai Số Bằng AI</span>
+                    <span>Chấm điểm & phân tích sai số bằng AI</span>
                   </>
                 )}
               </button>
@@ -395,7 +395,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                       <span>{evaluation.gdptCompetencyLevel || "ĐÁNH GIÁ CHUẨN NĂNG LỰC GDPT 2018"}</span>
                     </div>
                     <div className="text-2xl font-black text-blue-700 dark:text-cyan-400 mt-0.5">
-                      Tổng Điểm: {evaluation.totalScore.toFixed(1)} / 10.0
+                      Tổng điểm: {evaluation.totalScore.toFixed(1)} / 10.0
                     </div>
                   </div>
                   <div className="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-sm">

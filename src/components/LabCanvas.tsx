@@ -100,6 +100,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     s.y = 0;
     s.vy = 0;
     s.freeFallRecorded = false;
+    (s as any).timeAtGateE = undefined;
 
     // Projectile
     s.projX = 0;
@@ -114,12 +115,13 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     s.dropTrail = [];
     s.projFinished = false;
 
-    // Newton 2
-    s.cartX = 40;
+    // Newton 2 — use -1 sentinel so renderer places cart at gate E
+    s.cartX = -1;
     s.cartVx = 0;
     s.tGate1 = 0;
     s.tGate2 = 0;
     s.cartRecorded = false;
+    (s as any).timeAtGateE = undefined;
 
     // Friction
     s.blockX = 80;
@@ -240,6 +242,9 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
         case "free_sandbox":
           renderFreeSandbox(ctx, width, height, dt, isRunning, params);
           break;
+        case "digital_report":
+          renderDigitalReport(ctx, width, height);
+          break;
         default:
           renderGenericLab(ctx, width, height);
       }
@@ -289,7 +294,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     p: Record<string, any>
   ) => {
     const s = simState.current;
-    const distanceS = p.distanceS ?? 0.50; // m
+    const distanceS = p.distanceS ?? 0.50; // m - khoảng cách E→F
     const airRes = p.airResistance ?? false;
     const dragK = p.dragCoeff ?? 0.04;
     const massKg = (p.ballMassG ?? 50) / 1000;
@@ -302,8 +307,17 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     const totalScaleM = 0.9; // 90cm scale
     const pixelsPerMeter = (bottomY - topY) / totalScaleM;
 
-    const gateEY = topY + 40; // Gate E fixed near top (s = 0)
+    // MAG position (electromagnet at the very top)
+    const magY = topY - 4; // center of MAG block
+    const magBottomY = magY + 11; // bottom edge of MAG = ball start position
+
+    // Distance from MAG bottom to Gate E (fixed gap ~3cm)
+    const distMagToE = 0.03; // 3cm gap between MAG and Gate E
+    const gateEY = magBottomY + distMagToE * pixelsPerMeter;
     const gateFY = gateEY + distanceS * pixelsPerMeter;
+
+    // Ball starts at MAG position: s.y = 0 means ball is at MAG bottom
+    // s.y is physical distance (meters) fallen from MAG
 
     // Physics update if running
     if (running && !s.freeFallRecorded) {
@@ -316,30 +330,37 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       s.vy += accel * dt;
       s.y += s.vy * dt;
 
-      const currentBallY = gateEY + s.y * pixelsPerMeter;
+      // Ball pixel position (relative to MAG bottom)
+      const currentBallY = magBottomY + s.y * pixelsPerMeter;
 
-      // Trigger Gate E
+      // Trigger Gate E: ball passes through gate E
       if (currentBallY >= gateEY && !gateETriggered) {
         setGateETriggered(true);
         setMc964Active(true);
+        // Record the time when ball passes gate E
+        (s as any).timeAtGateE = s.time;
         if (soundEnabled) labAudio.playGateBeep(920, 0.06);
         onLogEvent?.({ time: s.time, event: "Cổng quang E kích hoạt", type: "gate" });
       }
 
-      // Update timer while between E and F
-      if (currentBallY >= gateEY && currentBallY < gateFY) {
-        setMc964Time(s.time);
+      // Update timer: show elapsed time since gate E (E→F only)
+      if (currentBallY >= gateEY && currentBallY < gateFY && (s as any).timeAtGateE !== undefined) {
+        setMc964Time(s.time - (s as any).timeAtGateE);
       }
 
-      // Trigger Gate F (Reached target distance s)
+      // Trigger Gate F (ball reaches target distance s from E)
       if (currentBallY >= gateFY) {
-        s.y = (gateFY - gateEY) / pixelsPerMeter;
+        s.y = (gateFY - magBottomY) / pixelsPerMeter; // Clamp at gate F
         s.freeFallRecorded = true;
         setGateFTriggered(true);
         setMc964Active(false);
 
-        // Exact analytical / integrated time for precision record
-        let exactTime = Math.sqrt((2 * distanceS) / g);
+        // Exact analytical time E→F:
+        // At gate E, ball has velocity v_E = sqrt(2g·d_ME) from falling MAG→E
+        // Time from E to F: solve s = v_E·t + 0.5·g·t²
+        // t = (-v_E + sqrt(v_E² + 2·g·s)) / g
+        const vAtE = Math.sqrt(2 * g * distMagToE);
+        let exactTime = (-vAtE + Math.sqrt(vAtE * vAtE + 2 * g * distanceS)) / g;
         if (airRes) {
           // Analytical drag adjustment for small k*v
           exactTime *= 1.058;
@@ -349,7 +370,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
         if (soundEnabled) labAudio.playGateBeep(650, 0.1);
         onLogEvent?.({ time: s.time, event: "Cổng quang F kích hoạt", type: "gate", value: `t = ${exactTime.toFixed(4)}s` });
 
-        // Spawn impact particles
+        // Spawn impact particles at gate F
         for (let i = 0; i < 12; i++) {
           const angle = Math.random() * Math.PI * 2;
           const speed = 30 + Math.random() * 60;
@@ -365,7 +386,6 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
         if (onAutoRecordTrial) {
           const tSq = exactTime * exactTime;
           const gCalc = (2 * distanceS) / tSq;
-          const pctErr = Math.abs((gCalc - 9.8) / 9.8) * 100;
           onAutoRecordTrial({
             param1: distanceS,
             param2: exactTime,
@@ -387,7 +407,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     ctx.fillStyle = "#475569";
     ctx.fillRect(colX - 8, topY - 20, 16, bottomY - topY + 40);
 
-    // Graduation marks on column
+    // Graduation marks on column (starting from gate E position)
     ctx.strokeStyle = "#94a3b8";
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "9px 'JetBrains Mono', monospace";
@@ -404,7 +424,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       }
     }
 
-    // 3. Electromagnet at top
+    // 3. Electromagnet at top (MAG)
     ctx.fillStyle = running ? "#64748b" : "#dc2626";
     ctx.fillRect(colX - 16, topY - 15, 32, 22);
     ctx.fillStyle = "#f8fafc";
@@ -448,7 +468,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     drawPhotogate(gateEY, "E", gateETriggered);
     drawPhotogate(gateFY, "F", gateFTriggered);
 
-    // Distance indicator dimension line s
+    // Distance indicator dimension line s (E→F)
     ctx.strokeStyle = "#38bdf8";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -469,8 +489,8 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     ctx.font = "bold 12px 'JetBrains Mono', monospace";
     ctx.fillText(`s = ${(distanceS * 100).toFixed(0)} cm`, colX + 120, (gateEY + gateFY) / 2);
 
-    // 5. Steel Ball
-    const currentBallY = gateEY + s.y * pixelsPerMeter;
+    // 5. Steel Ball — starts at MAG, falls through E then F
+    const currentBallY = magBottomY + s.y * pixelsPerMeter;
     const ballRadius = 9;
 
     // Ball gradient (metallic chrome sphere)
@@ -494,7 +514,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Velocity & Gravity Vectors
+    // Velocity & Gravity Vectors (only show when ball is moving)
     if (s.vy > 0) {
       const vLen = Math.min(60, s.vy * 14);
       drawVector(ctx, colX, currentBallY, colX, currentBallY + vLen, "#22c55e", "v");
@@ -741,6 +761,11 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     const gate1X = trackStartX + 200;
     const gate2X = gate1X + gateDistS * pxPerMeter;
 
+    // Cart starts at gate E position: initialize from sentinel
+    if (s.cartX < 0) {
+      s.cartX = gate1X;
+    }
+
     // Physics step
     if (running && !s.cartRecorded) {
       s.time += dt;
@@ -753,22 +778,35 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       s.cartVx += accel * dt;
       s.cartX += s.cartVx * dt * pxPerMeter;
 
-      // Photogate 1 check
+      // Photogate E check (flag passes through gate E)
       if (s.cartX >= gate1X && s.cartX <= gate1X + flagD * pxPerMeter) {
         if (!gateETriggered) {
           setGateETriggered(true);
+          setMc964Active(true);
           s.tGate1 = flagD / Math.max(0.01, s.cartVx);
+          // Record time when cart passes gate E
+          (s as any).timeAtGateE = s.time;
           if (soundEnabled) labAudio.playGateBeep(880, 0.04);
         }
       }
 
-      // Photogate 2 check
+      // Update MC964 timer: show elapsed time since gate E
+      if (gateETriggered && !gateFTriggered && (s as any).timeAtGateE !== undefined) {
+        setMc964Time(s.time - (s as any).timeAtGateE);
+      }
+
+      // Photogate F check (flag passes through gate F)
       if (s.cartX >= gate2X) {
         if (!gateFTriggered) {
           setGateFTriggered(true);
+          setMc964Active(false);
           s.tGate2 = flagD / Math.max(0.01, s.cartVx);
           s.cartRecorded = true;
           if (soundEnabled) labAudio.playGateBeep(700, 0.08);
+
+          // Record exact E→F time
+          const exactEFTime = (s as any).timeAtGateE !== undefined ? s.time - (s as any).timeAtGateE : s.time;
+          setMc964Time(exactEFTime);
 
           const v1 = flagD / s.tGate1;
           const v2 = flagD / s.tGate2;
@@ -778,7 +816,7 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
           if (onAutoRecordTrial) {
             onAutoRecordTrial({
               param1: m * g, // Lực kéo F (N)
-              param2: aExp,  // Gia tốc thực nghiệm (m/s^2)
+              param2: aExp,  // Gia tốc thực nghiệm (m/s²)
               calculated1: aTheo,
               calculated2: Math.abs((aExp - aTheo) / aTheo) * 100,
             });
@@ -876,25 +914,30 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     drawAirTrackGate(gate1X, "Cổng E", gateETriggered);
     drawAirTrackGate(gate2X, "Cổng F", gateFTriggered);
 
+    // Distance label between gates
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 10px 'JetBrains Mono', monospace";
+    ctx.fillText(`${(gateDistS * 100).toFixed(0)}cm`, (gate1X + gate2X) / 2 - 10, trackY - 68);
+
     // 5. Pulling String & Hanging Mass m
     ctx.strokeStyle = "#cbd5e1";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(curCartX + cartW, trackY - 10);
     ctx.lineTo(pulleyX, pulleyY - 14);
-    ctx.lineTo(pulleyX + 14, Math.min(h - 30, pulleyY + (s.cartX - 40) * 0.5 + 40));
+    ctx.lineTo(pulleyX + 14, Math.min(h - 30, pulleyY + (s.cartX - gate1X) * 0.5 + 40));
     ctx.stroke();
 
     // Hanging weight — clamp to stay within canvas
-    const hangY = Math.min(h - 30, pulleyY + (s.cartX - 40) * 0.5 + 40);
+    const hangY = Math.min(h - 30, pulleyY + (s.cartX - gate1X) * 0.5 + 40);
     ctx.fillStyle = "#f59e0b";
     ctx.fillRect(pulleyX + 5, hangY, 18, 26);
     ctx.fillStyle = "#ffffff";
     ctx.font = "9px sans-serif";
     ctx.fillText(`m=${(m * 1000).toFixed(0)}g`, pulleyX - 5, hangY + 38);
 
-    // Real-time calculated readings
-    drawMC964Timer(ctx, w * 0.72, 85, s.time, "MODE A<->B", running);
+    // Real-time calculated readings — show E→F time
+    drawMC964Timer(ctx, w * 0.72, 85, mc964Time, "MODE A<->B", mc964Active);
   };
 
   // ==========================================
@@ -1394,52 +1437,68 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     const cartH = 30;
 
     if (running) {
-      s.c1X += s.c1Vx * dt * 250;
-      s.c2X += s.c2Vx * dt * 250;
+      s.time += dt;
 
-      // Detect collision
-      if (s.c1X + cartW >= s.c2X && !s.collisionRecorded) {
-        s.collisionRecorded = true;
-        if (soundEnabled) labAudio.playCollision();
-        onLogEvent?.({ time: s.time, event: "Va chạm xảy ra!", type: "collision", value: `${type === "elastic" ? "Đàn hồi" : "Mềm"}` });
+      if (!s.collisionRecorded) {
+        // Before collision: update positions independently
+        s.c1X += s.c1Vx * dt * 250;
+        s.c2X += s.c2Vx * dt * 250;
 
-        // Spawn collision particles
-        const collisionX = (s.c1X + cartW + s.c2X) / 2;
-        for (let i = 0; i < 20; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = 40 + Math.random() * 80;
-          particles.current.push({
-            x: collisionX, y: trackY - cartH / 2,
-            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            life: 0, maxLife: 0.4 + Math.random() * 0.4,
-            color: `hsl(${200 + Math.random() * 60}, 100%, ${70 + Math.random() * 20}%)`,
-            size: 2 + Math.random() * 2.5,
-          });
+        // Detect collision
+        if (s.c1X + cartW >= s.c2X) {
+          s.collisionRecorded = true;
+          if (soundEnabled) labAudio.playCollision();
+          onLogEvent?.({ time: s.time, event: "Va chạm xảy ra!", type: "collision", value: `${type === "elastic" ? "Đàn hồi" : "Mềm (dính liền)"}` });
+
+          // Spawn collision particles
+          const collisionX = (s.c1X + cartW + s.c2X) / 2;
+          for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 40 + Math.random() * 80;
+            particles.current.push({
+              x: collisionX, y: trackY - cartH / 2,
+              vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+              life: 0, maxLife: 0.4 + Math.random() * 0.4,
+              color: `hsl(${200 + Math.random() * 60}, 100%, ${70 + Math.random() * 20}%)`,
+              size: 2 + Math.random() * 2.5,
+            });
+          }
+
+          const u1 = s.c1Vx;
+          const u2 = s.c2Vx;
+
+          if (type === "elastic") {
+            // 1D Elastic Collision formulas
+            s.c1Vx = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
+            s.c2Vx = ((m2 - m1) * u2 + 2 * m1 * u1) / (m1 + m2);
+          } else {
+            // Inelastic (va chạm mềm dính liền) — cả 2 cùng vận tốc
+            const commonV = (m1 * u1 + m2 * u2) / (m1 + m2);
+            s.c1Vx = commonV;
+            s.c2Vx = commonV;
+            // Snap cart 2 right next to cart 1
+            s.c2X = s.c1X + cartW;
+          }
+
+          if (onAutoRecordTrial) {
+            const pBefore = m1 * u1 + m2 * u2;
+            const pAfter = m1 * s.c1Vx + m2 * s.c2Vx;
+            onAutoRecordTrial({
+              param1: pBefore,
+              param2: pAfter,
+              calculated1: Math.abs(pAfter - pBefore),
+              calculated2: Math.abs((pAfter - pBefore) / (pBefore || 1)) * 100,
+            });
+          }
         }
+      } else {
+        // After collision: update positions
+        s.c1X += s.c1Vx * dt * 250;
+        s.c2X += s.c2Vx * dt * 250;
 
-        const u1 = s.c1Vx;
-        const u2 = s.c2Vx;
-
-        if (type === "elastic") {
-          // 1D Elastic Collision formulas
-          s.c1Vx = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
-          s.c2Vx = ((m2 - m1) * u2 + 2 * m1 * u1) / (m1 + m2);
-        } else {
-          // Inelastic (va chạm mềm dính liền)
-          const commonV = (m1 * u1 + m2 * u2) / (m1 + m2);
-          s.c1Vx = commonV;
-          s.c2Vx = commonV;
-        }
-
-        if (onAutoRecordTrial) {
-          const pBefore = m1 * u1 + m2 * u2;
-          const pAfter = m1 * s.c1Vx + m2 * s.c2Vx;
-          onAutoRecordTrial({
-            param1: pBefore,
-            param2: pAfter,
-            calculated1: Math.abs(pAfter - pBefore),
-            calculated2: Math.abs((pAfter - pBefore) / pBefore) * 100,
-          });
+        // In inelastic collision: keep carts stuck together
+        if (type !== "elastic") {
+          s.c2X = s.c1X + cartW;
         }
       }
     }
@@ -1447,6 +1506,14 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     // Draw Air Track
     ctx.fillStyle = "#334155";
     ctx.fillRect(40, trackY, w - 80, 20);
+
+    // Air track surface dots
+    ctx.fillStyle = "#38bdf8";
+    for (let x = 50; x < w - 80; x += 15) {
+      ctx.beginPath();
+      ctx.arc(x, trackY + 5, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // Cart 1 (Blue)
     ctx.fillStyle = "#0284c7";
@@ -1467,21 +1534,64 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
     ctx.font = "bold 10px sans-serif";
     ctx.fillText(`Xe 2 (${(m2 * 1000).toFixed(0)}g)`, s.c2X + 10, trackY - 12);
 
-    // Collision bumper type visual
+    // Collision bumper type visual on cart 1 right side
     if (type === "elastic") {
+      // Lá thép đàn hồi (spring bumper)
       ctx.strokeStyle = "#eab308";
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(s.c1X + cartW + 4, trackY - cartH / 2, 6, -Math.PI / 2, Math.PI / 2);
       ctx.stroke();
     } else {
+      // Kim cắm sáp (needle/wax pin for inelastic)
       ctx.fillStyle = "#dc2626";
-      ctx.fillRect(s.c1X + cartW, trackY - cartH / 2 - 4, 8, 8); // Velcro/wax pin
+      ctx.fillRect(s.c1X + cartW, trackY - cartH / 2 - 4, 8, 8);
+      // Sáp on cart 2 left side
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(s.c2X - 6, trackY - cartH / 2 - 3, 6, 6);
+    }
+
+    // After inelastic collision: draw coupling bracket showing carts are stuck
+    if (type !== "elastic" && s.collisionRecorded) {
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 2]);
+      // Bracket connecting the two carts
+      const bracketY1 = trackY - cartH - 5;
+      const bracketY2 = trackY - cartH - 12;
+      ctx.beginPath();
+      ctx.moveTo(s.c1X + cartW / 2, bracketY1);
+      ctx.lineTo(s.c1X + cartW / 2, bracketY2);
+      ctx.lineTo(s.c2X + cartW / 2, bracketY2);
+      ctx.lineTo(s.c2X + cartW / 2, bracketY1);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // "DÍNH" label
+      ctx.fillStyle = "#ef4444";
+      ctx.font = "bold 9px sans-serif";
+      ctx.fillText("DÍNH", (s.c1X + s.c2X + cartW) / 2 - 10, bracketY2 - 3);
     }
 
     // Velocity Vectors
-    drawVector(ctx, s.c1X + cartW / 2, trackY - cartH - 10, s.c1X + cartW / 2 + s.c1Vx * 60, trackY - cartH - 10, "#38bdf8", `v1=${s.c1Vx.toFixed(2)}`);
-    drawVector(ctx, s.c2X + cartW / 2, trackY - cartH - 10, s.c2X + cartW / 2 + s.c2Vx * 60, trackY - cartH - 10, "#4ade80", `v2=${s.c2Vx.toFixed(2)}`);
+    const v1Display = s.c1Vx.toFixed(2);
+    const v2Display = s.c2Vx.toFixed(2);
+    drawVector(ctx, s.c1X + cartW / 2, trackY - cartH - 18, s.c1X + cartW / 2 + s.c1Vx * 60, trackY - cartH - 18, "#38bdf8", `v1=${v1Display}`);
+    if (!(type !== "elastic" && s.collisionRecorded)) {
+      // Show v2 vector only if not stuck (when stuck, they share v1)
+      drawVector(ctx, s.c2X + cartW / 2, trackY - cartH - 18, s.c2X + cartW / 2 + s.c2Vx * 60, trackY - cartH - 18, "#4ade80", `v2=${v2Display}`);
+    }
+
+    // Momentum conservation display
+    const pBefore = m1 * (p.cart1InitialV ?? 0.60) + m2 * (p.cart2InitialV ?? 0);
+    const pAfter = m1 * s.c1Vx + m2 * s.c2Vx;
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "11px 'JetBrains Mono', monospace";
+    ctx.fillText(`p trước = ${pBefore.toFixed(4)} kg·m/s`, 60, trackY + 50);
+    ctx.fillText(`p sau   = ${pAfter.toFixed(4)} kg·m/s`, 60, trackY + 66);
+    const pErr = pBefore !== 0 ? Math.abs((pAfter - pBefore) / pBefore) * 100 : 0;
+    ctx.fillStyle = pErr < 1 ? "#22c55e" : "#eab308";
+    ctx.fillText(`Δp/p = ${pErr.toFixed(2)}%`, 60, trackY + 82);
   };
 
   // ==========================================
@@ -2392,6 +2502,113 @@ export const LabCanvas: React.FC<LabCanvasProps> = ({
       ctx.fillText(`Li độ biến dạng:  x = ${(s.sandboxSpringY * 100).toFixed(1)} cm`, 32, h - 100);
       ctx.fillText(`Lực hồi phục:     F = ${(-springK * s.sandboxSpringY).toFixed(2)} N`, 32, h - 80);
     }
+  };
+
+  // ===================== DIGITAL REPORT (Phiếu thực hành số) =====================
+  const renderDigitalReport = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    const cx = w / 2;
+    const cy = h / 2;
+
+    // --- Background gradient overlay ---
+    const bgGrad = ctx.createRadialGradient(cx, cy, 40, cx, cy, w * 0.6);
+    bgGrad.addColorStop(0, "rgba(6, 78, 59, 0.25)");
+    bgGrad.addColorStop(1, "rgba(9, 13, 22, 0)");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // --- Central icon: Clipboard / Report ---
+    const iconX = cx;
+    const iconY = cy - 80;
+
+    // Clipboard body
+    ctx.fillStyle = "#134e4a";
+    ctx.strokeStyle = "#2dd4bf";
+    ctx.lineWidth = 2;
+    const cbW = 70, cbH = 90;
+    const cbX = iconX - cbW / 2, cbY = iconY - cbH / 2;
+
+    // Rounded rect
+    const r = 8;
+    ctx.beginPath();
+    ctx.moveTo(cbX + r, cbY);
+    ctx.lineTo(cbX + cbW - r, cbY);
+    ctx.arcTo(cbX + cbW, cbY, cbX + cbW, cbY + r, r);
+    ctx.lineTo(cbX + cbW, cbY + cbH - r);
+    ctx.arcTo(cbX + cbW, cbY + cbH, cbX + cbW - r, cbY + cbH, r);
+    ctx.lineTo(cbX + r, cbY + cbH);
+    ctx.arcTo(cbX, cbY + cbH, cbX, cbY + cbH - r, r);
+    ctx.lineTo(cbX, cbY + r);
+    ctx.arcTo(cbX, cbY, cbX + r, cbY, r);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Clipboard clip tab
+    ctx.fillStyle = "#0d9488";
+    ctx.fillRect(iconX - 18, cbY - 8, 36, 16);
+    ctx.strokeRect(iconX - 18, cbY - 8, 36, 16);
+
+    // Lines on clipboard (simulating text lines)
+    ctx.strokeStyle = "#5eead4";
+    ctx.lineWidth = 1.5;
+    const lineStartX = cbX + 12;
+    const lineEndX = cbX + cbW - 12;
+    for (let i = 0; i < 5; i++) {
+      const ly = cbY + 28 + i * 12;
+      ctx.beginPath();
+      ctx.moveTo(lineStartX, ly);
+      ctx.lineTo(lineEndX - (i === 4 ? 20 : 0), ly);
+      ctx.stroke();
+    }
+
+    // Checkmark icon on bottom right
+    ctx.strokeStyle = "#4ade80";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(cbX + cbW - 22, cbY + cbH - 20);
+    ctx.lineTo(cbX + cbW - 14, cbY + cbH - 12);
+    ctx.lineTo(cbX + cbW - 4, cbY + cbH - 28);
+    ctx.stroke();
+    ctx.lineCap = "butt";
+    ctx.lineJoin = "miter";
+
+    // --- Title text ---
+    ctx.fillStyle = "#5eead4";
+    ctx.font = "bold 18px 'Inter', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Phiếu thực hành số & AI chấm điểm", cx, cy + 30);
+
+    // Subtitle
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "13px 'Inter', sans-serif";
+    ctx.fillText("Tính sai số • Lập báo cáo • AI đánh giá Rubric GDPT 2018", cx, cy + 55);
+
+    // --- Instructions ---
+    ctx.font = "12px 'Inter', sans-serif";
+    const instructions = [
+      "① Chọn một bài thí nghiệm bất kỳ → Đo số liệu → Lưu vào bảng",
+      "② Nhấn nút  「 Phiếu báo cáo 」  trên thanh công cụ để mở biểu mẫu",
+      "③ Điền thông tin → AI tự động tính sai số & chấm điểm GDPT 2018",
+    ];
+
+    ctx.fillStyle = "#64748b";
+    instructions.forEach((text, i) => {
+      ctx.fillText(text, cx, cy + 90 + i * 22);
+    });
+
+    // --- Animated pulse ring around icon ---
+    const t = performance.now() / 1000;
+    const pulseAlpha = 0.2 + 0.15 * Math.sin(t * 2.5);
+    ctx.strokeStyle = `rgba(45, 212, 191, ${pulseAlpha})`;
+    ctx.lineWidth = 2;
+    const pulseR = 65 + 8 * Math.sin(t * 2);
+    ctx.beginPath();
+    ctx.arc(iconX, iconY, pulseR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.textAlign = "start";
   };
 
   const renderGenericLab = (ctx: CanvasRenderingContext2D, w: number, h: number) => {

@@ -19,6 +19,18 @@ mjx-container *,
   fill: currentColor !important;
 }
 
+/* === MathJax display mode: reduce default vertical margins in compact panels === */
+mjx-container[display="true"] {
+  margin: 0.3em 0 !important;
+}
+
+/* Ensure MathJax formulas scale down in narrow containers */
+mjx-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 /* === Smooth theme transition === */
 html {
   transition: background-color 0.3s ease, color 0.3s ease;

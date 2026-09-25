@@ -209,7 +209,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Cấu Hình AI & API Key</span>
+            <span>Cấu hình AI & API Key</span>
             {apiKeyInput.trim() && isKeyFormatValid ? (
               <span className="w-2 h-2 rounded-full bg-emerald-500 ml-1"></span>
             ) : (
@@ -421,7 +421,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Lưu Cấu Hình</span>
+                  <span>Lưu cấu hình</span>
                 </button>
 
                 {apiKeyInput.trim() && (

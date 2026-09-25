@@ -66,7 +66,7 @@ export const LabControls: React.FC<LabControlsProps> = ({
           }`}
         >
           {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          <span>{isRunning ? "Tạm Dừng" : "Bắt Đầu"}</span>
+          <span>{isRunning ? "Tạm dừng" : "Bắt đầu"}</span>
         </button>
 
         <button
@@ -75,7 +75,7 @@ export const LabControls: React.FC<LabControlsProps> = ({
           className="px-3 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
-          <span>Đặt Lại</span>
+          <span>Đặt lại</span>
         </button>
 
         <button
@@ -84,7 +84,7 @@ export const LabControls: React.FC<LabControlsProps> = ({
           className="col-span-2 px-3 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm shadow-teal-600/20 transition-all active:scale-95"
         >
           <ClipboardList className="w-4 h-4" />
-          <span>Lưu Vào Bảng Số Liệu</span>
+          <span>Lưu vào bảng số liệu</span>
         </button>
       </div>
 
@@ -499,6 +499,96 @@ export const LabControls: React.FC<LabControlsProps> = ({
                   className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-mono"
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {labId === "collision_momentum" && (
+          <div className="space-y-3.5">
+            {/* Collision Type Selector */}
+            <div>
+              <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Loại va chạm:
+              </div>
+              <div className="flex gap-2">
+                {[
+                  { id: "elastic", label: "🔵 Đàn hồi", desc: "Lò xo lá" },
+                  { id: "inelastic", label: "🔴 Mềm (dính)", desc: "Kim cắm sáp" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => onParamChange("collisionType", t.id)}
+                    className={`flex-1 text-xs py-2 px-2 rounded-lg border transition-all ${
+                      (params.collisionType ?? "elastic") === t.id
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <div className="font-bold">{t.label}</div>
+                    <div className="text-[10px] opacity-75">{t.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Cart 1 Mass */}
+            <div>
+              <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <span>Khối lượng xe 1 (m₁):</span>
+                <span className="font-mono text-blue-600 dark:text-cyan-400 font-bold">
+                  {((params.cart1MassKg ?? 0.200) * 1000).toFixed(0)} g
+                </span>
+              </div>
+              <input
+                id="input-param-cart1MassKg"
+                type="range"
+                min="0.100"
+                max="0.500"
+                step="0.050"
+                value={params.cart1MassKg ?? 0.200}
+                onChange={(e) => onParamChange("cart1MassKg", parseFloat(e.target.value))}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+            </div>
+
+            {/* Cart 2 Mass */}
+            <div>
+              <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <span>Khối lượng xe 2 (m₂):</span>
+                <span className="font-mono text-blue-600 dark:text-cyan-400 font-bold">
+                  {((params.cart2MassKg ?? 0.200) * 1000).toFixed(0)} g
+                </span>
+              </div>
+              <input
+                id="input-param-cart2MassKg"
+                type="range"
+                min="0.100"
+                max="0.500"
+                step="0.050"
+                value={params.cart2MassKg ?? 0.200}
+                onChange={(e) => onParamChange("cart2MassKg", parseFloat(e.target.value))}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+            </div>
+
+            {/* Cart 1 Initial Velocity */}
+            <div>
+              <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <span>Vận tốc ban đầu xe 1 (v₁):</span>
+                <span className="font-mono text-blue-600 dark:text-cyan-400 font-bold">
+                  {(params.cart1InitialV ?? 0.60).toFixed(2)} m/s
+                </span>
+              </div>
+              <input
+                id="input-param-cart1InitialV"
+                type="range"
+                min="0.20"
+                max="1.50"
+                step="0.10"
+                value={params.cart1InitialV ?? 0.60}
+                onChange={(e) => onParamChange("cart1InitialV", parseFloat(e.target.value))}
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
             </div>
           </div>
         )}
@@ -1027,8 +1117,8 @@ export const LabControls: React.FC<LabControlsProps> = ({
           <Info className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
           <span>CƠ SỞ LÝ THUYẾT & CÔNG THỨC SGK</span>
         </div>
-        <div className="font-mono text-blue-950 dark:text-cyan-200 bg-white dark:bg-slate-950/80 p-2.5 rounded-lg border border-blue-200/80 dark:border-blue-700/60 text-center font-bold tracking-wide shadow-xs [&_mjx-container]:!text-inherit">
-          <MathRenderer content={"\\(" + lab.formula + "\\)"} className="text-blue-950 dark:text-cyan-200 font-bold" inline />
+        <div className="text-blue-950 dark:text-cyan-200 bg-white dark:bg-slate-950/80 px-3 py-2.5 rounded-lg border border-blue-200/80 dark:border-blue-700/60 text-center font-bold shadow-xs overflow-x-auto [&_mjx-container]:!text-inherit [&_.MathJax]:!overflow-visible [&_mjx-container[display=true]]:!margin-block-[0.25em]">
+          <MathRenderer content={"\\[\\begin{gathered}" + lab.formula + "\\end{gathered}\\]"} className="text-blue-950 dark:text-cyan-200 font-bold" />
         </div>
         <ul className="space-y-1.5 text-[11.5px]">
           {lab.principles.slice(0, 2).map((p, idx) => (

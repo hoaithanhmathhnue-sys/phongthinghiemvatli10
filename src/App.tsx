@@ -244,12 +244,17 @@ export default function App() {
     let c2 = 0;
 
     switch (currentLabId) {
-      case "free_fall":
+      case "free_fall": {
         p1 = params.distanceS ?? 0.50;
-        p2 = Math.sqrt((2 * p1) / 9.8) * (1 + (Math.random() - 0.5) * 0.006);
+        // Ball falls 3cm from MAG to gate E, arriving with v_E = sqrt(2g*0.03)
+        const distME = 0.03;
+        const vE = Math.sqrt(2 * 9.8 * distME);
+        // Time E→F: t = (-v_E + sqrt(v_E² + 2g·s)) / g
+        p2 = (-vE + Math.sqrt(vE * vE + 2 * 9.8 * p1)) / 9.8 * (1 + (Math.random() - 0.5) * 0.006);
         c1 = p2 * p2;
         c2 = (2 * p1) / c1;
         break;
+      }
       case "projectile":
         p1 = params.launchAngleDeg ?? 0;
         p2 = params.initialVelocityV0 ?? 4.0;
@@ -385,7 +390,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Hàng 2 RIÊNG BIỆT: Nút Thầy AI Sư Phạm & Thiết lập mô phỏng */}
+          {/* Hàng 2 RIÊNG BIỆT: Nút Thầy AI sư phạm & Thiết lập mô phỏng */}
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {/* Quick AI Trigger Chip */}
             <button
@@ -393,7 +398,7 @@ export default function App() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600/10 via-cyan-600/10 to-teal-600/10 hover:from-blue-600/20 hover:to-teal-600/20 border border-blue-500/30 text-blue-700 dark:text-cyan-300 text-xs font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
               <Sparkles className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
-              <span>Thầy AI Sư Phạm: "Em cần trợ giúp gì trong bài này?"</span>
+              <span>Thầy AI sư phạm: "Em cần trợ giúp gì trong bài này?"</span>
             </button>
 
             {/* Sim Setup Button */}
